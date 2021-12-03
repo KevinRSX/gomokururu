@@ -1,2 +1,6 @@
 .stack-work/
+dist-newstyle/
+
+*.lock
+gomokururu.cabal
 *~
