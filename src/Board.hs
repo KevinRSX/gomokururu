@@ -1,4 +1,4 @@
-module Lib
+module Board
     ( someFunc
     , Piece (..)
     ) where
