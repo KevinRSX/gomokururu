@@ -2,30 +2,45 @@ module Lib
   ( 
     Piece (..),
     genBoard,
-    printBoard
+    printBoard,
+    placePiece
   )
 where
 
-import Data.Vector as V (Vector, map, replicate, toList)
+import Data.Vector as V
+  (
+    Vector,
+    map,
+    replicate,
+    toList,
+    fromList,
+    (//),
+    (!)
+  )
 
-type Board = Vector (Vector (Maybe Piece))
-data Piece = White | Black
+type Board = Vector (Vector Piece)
+data Piece = White | Black | Empty
 instance Show Piece where
   show White = "W"
   show Black = "B"
+  show _ = "_"
 
 printBoard b = do
   mapM_ putStrLn (V.toList $ V.map getVPieceString b)
 
-piece2emoji :: Maybe Piece -> [Char]
-piece2emoji (Just White) = "⚪"
-piece2emoji (Just Black) = "⚫"
-piece2emoji Nothing = "🔹"
+piece2emoji :: Piece -> [Char]
+piece2emoji White = "⚪"
+piece2emoji Black = "⚫"
+piece2emoji Empty = "🔹"
 
-getVPieceString :: Vector (Maybe Piece) -> [Char]
+getVPieceString :: Vector Piece -> [Char]
 getVPieceString vp = concatMap piece2emoji (V.toList vp)
 
 genBoard :: Int -> Board
 genBoard dim = V.replicate dim row
   where
-    row = V.replicate dim Nothing
+    row = V.replicate dim Empty
+
+placePiece :: Board -> Piece -> Int -> Int -> Board
+placePiece b p row col = b // [(row, updatedRow)]
+  where updatedRow = (b ! row) // [(col, p)]
