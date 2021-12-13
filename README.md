@@ -14,6 +14,7 @@ This is a class project for [COMS W4995 Parallel Functional Programming, Fall 20
 
 To compile, run `stack build` to build the minimal project.
 
-To run...
+To execute the game, run `stack run gomokururu-exe`.
+    (To be updated)
 
 More information can be found at [The Haskell Tool Stack Homepage](https://docs.haskellstack.org/en/stable/README/).

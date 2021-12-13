@@ -1,7 +1,6 @@
 module Main where
 
-import Board
+import Lib (printBoard, genBoard)
 
 main :: IO ()
-main = do someFunc
-          putStrLn $ show White
+main = do printBoard $ genBoard 17
