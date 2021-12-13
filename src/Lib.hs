@@ -9,10 +9,11 @@ where
 import Data.Vector as V (Vector, map, replicate, toList)
 
 type Board = Vector (Vector (Maybe Piece))
-data Piece = White | Black
+data Piece = White | Black | Empty
 instance Show Piece where
-  show White = "W"
-  show Black = "B"
+  show White = "O"
+  show Black = "X"
+  show Empty = "-"
 
 printBoard b = do
   mapM_ putStrLn (V.toList $ V.map getVPieceString b)
