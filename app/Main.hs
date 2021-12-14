@@ -7,25 +7,41 @@ import Game
     genBoard,
     printBoard,
     placePiece,
-    piece2emoji
+    piece2emoji,
+    showStepInfo
   )
+
+import AI
 
 main :: IO ()
 main = do
-    gameLoop (genBoard 10) 0
+    gameLoop (genBoard 10) 0 10
 
-gameLoop :: Board -> Int -> IO ()
-gameLoop board step = do
-    let boardB = placePiece board Black 1 2
+getPair :: IO (Int, Int)
+getPair = do
+    rl <- getLine
+    cl <- getLine
+    return (read rl, read cl)
+
+gameLoop :: Board -> Int -> Int -> IO ()
+gameLoop board step totalSteps = do
+    putStrLn "\n====Current Board===="
+    printBoard board
+    putStrLn "====================="
+
+
+    putStrLn "Input black row and col: "
+    (brow, bcol) <- getPair
+    let boardB = placePiece board Black brow bcol
     showStepInfo Black (step + 1)
     printBoard boardB
-    showStepInfo White (step + 2)
-    let boardW = placePiece boardB White 3 4
-    printBoard boardW
-    if step + 2 < 2
-        then gameLoop boardW (step + 2)
-    else return ()
 
-showStepInfo :: Piece -> Int -> IO ()
-showStepInfo p step = do
-    putStrLn $ "\n" ++ (piece2emoji p) ++ "'s Move: step " ++ (show step)
+    putStrLn "Input white row and col: "
+    (wrow, wcol) <- getPair
+    let boardW = placePiece boardB White wrow wcol
+    showStepInfo White (step + 2)
+    printBoard boardW
+
+    if step + 2 < totalSteps
+        then gameLoop boardW (step + 2) totalSteps
+    else return ()

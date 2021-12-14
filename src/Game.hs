@@ -6,7 +6,8 @@ module Game
     printBoard,
     placePiece,
     whoIsWinning5,
-    piece2emoji
+    piece2emoji,
+    showStepInfo
   )
 where
 
@@ -47,6 +48,10 @@ genBoard :: Int -> Board
 genBoard dim = V.replicate dim row
   where
     row = V.replicate dim Empty
+
+showStepInfo :: Piece -> Int -> IO ()
+showStepInfo p step = do
+    putStrLn $ "\nStep " ++ (show step) ++ ": " ++ (piece2emoji p) ++ "'s move"
 
 
 -- Modifying Board state

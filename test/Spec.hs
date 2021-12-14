@@ -1,6 +1,7 @@
 module Main where
 import Text.Printf
 import Game
+import AI
 
 
 redANSI = "\ESC[31m"
