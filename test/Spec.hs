@@ -1,6 +1,6 @@
 module Main where
 import Text.Printf
-import Lib
+import Game
 
 
 redANSI = "\ESC[31m"
@@ -16,6 +16,7 @@ putCheckRes caseName eRes res = do
 
 main :: IO ()
 main = do
+    -- Board placement
     printBoard $ genBoard 10
     putStr "\n"
     let board1 = placePiece (genBoard 10) White 4 5
@@ -24,6 +25,7 @@ main = do
     let board2 = placePiece board1 Black 3 4
     printBoard board2
 
+    -- Check win
     putCheckRes
         "No one is winning (5 Empty): "
         Nothing

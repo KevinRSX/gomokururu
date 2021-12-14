@@ -1,10 +1,12 @@
-module Lib 
+module Game
   ( 
     Piece (..),
+    Board (..),
     genBoard,
     printBoard,
     placePiece,
-    whoIsWinning5
+    whoIsWinning5,
+    piece2emoji
   )
 where
 
@@ -18,8 +20,11 @@ import Data.Vector as V
     (//),
     (!)
   )
+
 import Data.List (group)
 
+-- Algebraic data types for Board and Piece
+-- TODO (Andreas): Use another branch to try 1D once the first task is done
 type Board = Vector (Vector Piece)
 data Piece = White | Black | Empty deriving (Eq)
 instance Show Piece where
@@ -43,10 +48,16 @@ genBoard dim = V.replicate dim row
   where
     row = V.replicate dim Empty
 
+
+-- Modifying Board state
+-- TODO (Kevin): Complete gameLoop
 placePiece :: Board -> Piece -> Int -> Int -> Board
 placePiece b p row col = b // [(row, updatedRow)]
   where updatedRow = (b ! row) // [(col, p)]
 
+
+-- Check win
+-- TODO (Kevin): Generic check win function
 whoIsWinning :: [Piece] -> Int -> Maybe Piece
 whoIsWinning line cLen = helper (group line) cLen
   where
