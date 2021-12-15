@@ -7,7 +7,9 @@ module Game
     placePiece,
     whoIsWinning5,
     piece2emoji,
-    showStepInfo
+    showStepInfo,
+    pieceValid,
+    reversePiece
   )
 where
 
@@ -26,15 +28,24 @@ import Data.List (group)
 
 -- Algebraic data types for Board and Piece
 -- TODO (Andreas): Use another branch to try 1D once the first task is done
-type Board = Vector (Vector Piece)
+data Board = Board { dim :: Int
+                   , getBoard :: Vector (Vector Piece) }
+ -- type Board = Vector (Vector Piece)
 data Piece = White | Black | Empty deriving (Eq)
+
 instance Show Piece where
   show White = "W"
   show Black = "B"
   show _ = "_"
 
+reversePiece :: Piece -> Piece
+reversePiece White = Black
+reversePiece Black = White
+reversePiece _ = error "invalid argument"
+
+printBoard :: Board -> IO ()
 printBoard b = do
-  mapM_ putStrLn (V.toList $ V.map getVPieceString b)
+  mapM_ putStrLn (V.toList $ V.map getVPieceString $ getBoard b)
 
 piece2emoji :: Piece -> [Char]
 piece2emoji White = "⚪"
@@ -45,9 +56,8 @@ getVPieceString :: Vector Piece -> [Char]
 getVPieceString vp = concatMap piece2emoji (V.toList vp)
 
 genBoard :: Int -> Board
-genBoard dim = V.replicate dim row
-  where
-    row = V.replicate dim Empty
+genBoard dim = Board dim bd
+  where bd = V.replicate dim (V.replicate dim Empty)
 
 showStepInfo :: Piece -> Int -> IO ()
 showStepInfo p step = do
@@ -56,9 +66,15 @@ showStepInfo p step = do
 
 -- Modifying Board state
 -- TODO (Kevin): Complete gameLoop
+
+pieceValid :: Board -> Int -> Int -> Bool
+pieceValid board row col = (getBoard board ! row ! col) == Empty
+
 placePiece :: Board -> Piece -> Int -> Int -> Board
-placePiece b p row col = b // [(row, updatedRow)]
-  where updatedRow = (b ! row) // [(col, p)]
+placePiece board p row col = Board (dim board) bd
+  where bd = b // [(row, updatedRow)]
+        updatedRow = (b ! row) // [(col, p)]
+        b = getBoard board
 
 
 -- Check win

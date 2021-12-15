@@ -1,21 +1,11 @@
 module Main where
 
 import Game 
-  (
-    Board (..),
-    Piece (..), 
-    genBoard,
-    printBoard,
-    placePiece,
-    piece2emoji,
-    showStepInfo
-  )
-
 import AI
 
 main :: IO ()
 main = do
-    gameLoop (genBoard 10) 0 10
+    gameLoop (genBoard 10) Black 0 10
 
 getPair :: IO (Int, Int)
 getPair = do
@@ -23,25 +13,28 @@ getPair = do
     cl <- getLine
     return (read rl, read cl)
 
-gameLoop :: Board -> Int -> Int -> IO ()
-gameLoop board step totalSteps = do
+takeTurn :: Board -> Piece -> Int -> IO Board
+takeTurn board piece step = do
+    putStrLn $ "Input " ++ (piece2emoji piece) ++ " row and col: "
+    (brow, bcol) <- getPair
+    if not (pieceValid board brow bcol)
+        then do
+            putStrLn "Invalid placement, try again."
+            takeTurn board piece step
+    else do
+        let newBoard = placePiece board piece brow bcol
+        showStepInfo Black step
+        printBoard newBoard
+        return newBoard
+
+gameLoop :: Board -> Piece -> Int -> Int -> IO ()
+gameLoop board piece step totalSteps = do
     putStrLn "\n====Current Board===="
     printBoard board
     putStrLn "====================="
 
+    newBoard <- takeTurn board piece (step + 1)
 
-    putStrLn "Input black row and col: "
-    (brow, bcol) <- getPair
-    let boardB = placePiece board Black brow bcol
-    showStepInfo Black (step + 1)
-    printBoard boardB
-
-    putStrLn "Input white row and col: "
-    (wrow, wcol) <- getPair
-    let boardW = placePiece boardB White wrow wcol
-    showStepInfo White (step + 2)
-    printBoard boardW
-
-    if step + 2 < totalSteps
-        then gameLoop boardW (step + 2) totalSteps
+    if step + 1 < totalSteps
+        then gameLoop newBoard (reversePiece piece) (step + 1) totalSteps
     else return ()
