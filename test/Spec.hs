@@ -13,18 +13,18 @@ greenify s = greenANSI ++ s ++ defANSI
 putCheckRes caseName eRes res = do
     putStrLn $ prettyCaseName ++ " " ++ passStr
     where passStr = if res == eRes then  greenify "passed" else redify "failed"
-          prettyCaseName = printf "%-30s" caseName
+          prettyCaseName = printf "%-40s" caseName
 
 main :: IO ()
 main = do
     -- Board placement
-    printBoard $ genBoard 10
+    putBoard $ genBoard 10
     putStr "\n"
     let board1 = placePiece (genBoard 10) White 4 5
-    printBoard board1
+    putBoard board1
     putStr "\n"
     let board2 = placePiece board1 Black 3 4
-    printBoard board2
+    putBoard board2
 
     -- Check win
     putCheckRes
@@ -41,4 +41,10 @@ main = do
         "White is winning (5 White): "
         (Just White)
         (whoIsWinning5 $ replicate 4 Black ++ replicate 5 White)
+    
+    let t = placePieceFrmTuplesF (genBoard 17) ["BKJ","WKJ","BLM","BBC", "WOM", "WON","WOO","WOP","WOQ"]
+    putCheckRes
+        "White won on row O in a board: "
+        (Just White)
+        (chkBoardWinning 14 14 t)
     putStrLn "Done"

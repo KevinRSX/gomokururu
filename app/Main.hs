@@ -1,6 +1,6 @@
 module Main where
 
-import Game 
+import Game
 import AI
 
 main :: IO ()
@@ -15,7 +15,7 @@ getPair = do
 
 takeTurn :: Board -> Piece -> Int -> IO Board
 takeTurn board piece step = do
-    putStrLn $ "Input " ++ (piece2emoji piece) ++ " row and col: "
+    putStrLn $ "Input " ++ piece2emoji piece ++ " row and col: "
     (brow, bcol) <- getPair
     if not (pieceValid board brow bcol)
         then do
@@ -24,13 +24,13 @@ takeTurn board piece step = do
     else do
         let newBoard = placePiece board piece brow bcol
         showStepInfo Black step
-        printBoard newBoard
+        putBoard newBoard
         return newBoard
 
 gameLoop :: Board -> Piece -> Int -> Int -> IO ()
 gameLoop board piece step totalSteps = do
     putStrLn "\n====Current Board===="
-    printBoard board
+    putBoard board
     putStrLn "====================="
 
     newBoard <- takeTurn board piece (step + 1)
