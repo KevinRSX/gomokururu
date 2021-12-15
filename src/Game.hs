@@ -129,6 +129,40 @@ chkBoardWinning row col board
     where res = mapMaybe whoIsWinning5 sls
           sls = getStarLines row col 5 board
 
+getColFrmBoard :: Board -> Int -> Int -> Int -> [Piece]
+getColFrmBoard board col rf rt
+  | col < 0    = error "bad col"
+  | col >= bDim = error "bad col: larger than dimension"
+  | otherwise  = helper b [rf..rt]
+    where b = getBoard board
+          bDim = dim board
+          helper b []     = []
+          helper b (r:rs) = (b ! r ! col) : helper b rs
+
+getLineFrmBoard :: Board -> Int -> Int -> Int -> Int -> [Piece]
+getLineFrmBoard board fr fc tr tc
+  | fr<0 || fc<0 || tr<0 || tc <0                = error "some coordinates are zeroes"
+  | fr>=bDim || fc>=bDim || tr>=bDim || tc>=bDim = error "some coordinates are beyond dimension"
+  | fr == tr && fc == tc   = [b ! fr ! fc]  -- A dot
+  | fr == tr               = hLine b fr fc tc
+  | fc == tc               = vLine b fc fr tr
+  | abs (fr-tr) == abs (fc-tc) = dLine b fr fc tr tc
+  | otherwise      = 
+    error $ show fr ++ " " ++ show fc ++ "    " ++ show tr ++" " ++ show tc ++ " genDlineFrmBoard error: coordinates are wrong"
+    where b    = getBoard board
+          bDim = dim board
+          hLine = error "not implemented"
+          vLine = error "not implemented"
+          dLine b fr fc tr tc =
+            dHelper b ftr ftc
+              where
+                ftr = if fr < tr then [fr..tr] else [fr,fr-1..tr]
+                ftc = if fc < tc then [fc..tc] else [fc,fc-1..tc]
+                dHelper b [] []         = []
+                dHelper b _ []          = []
+                dHelper b [] _          = []
+                dHelper b (r:rs) (c:cs) = b ! r ! c : dHelper b rs cs
+
 {-
 Star lines
 4   4   4
@@ -143,6 +177,14 @@ Star lines
 
 -}
 
+-- Something is wrong with this function
+getDrc fr fc dr dc dim len
+  | len<=0 || nr < 0 || nc < 0 || nr >= dim || nc >= dim = (fr,fc)
+  | otherwise = getDrc nr nc dr dc dim ll
+    where nr = fr+dr
+          nc = fc+dc
+          ll = len-1
+
 -- TODO: create type of Vector (Vector a)
 getStarLines :: Int -> Int -> Int -> Board -> [[Piece]]
 getStarLines row col llen board =
@@ -153,14 +195,26 @@ getStarLines row col llen board =
   -- V.toList (V.slice col              rtLength (getBoard board ! row)),
 
   -- v 2.0 - concise
-  V.toList (V.slice hi hn (getBoard board ! row))
+  V.toList (V.slice hi hn (b ! row)),
   -- verticals
+  getColFrmBoard board col ra rb,
   -- diagonals
+
+  getLineFrmBoard board tlr tlc brr brc,
+  getLineFrmBoard board blr blc trr trc
   ]
-  where bDim = dim board
+  where b    = getBoard board
+        bDim = dim board
         -- ltLength = if col-llen < 0 then col+1 else llen
         -- rtLength = if col+llen > bDim then bDim - col else llen
         hi = if col - llen < 0 then 0 else col - llen + 1
         hn = if hi + hLen > bDim then bDim - hi else hLen
         hLen = llen*2-1
+
+        ra = if row - llen < 0 then 0 else row - llen + 1
+        rb = if row + llen >= bDim then bDim - 1 else row + llen - 1
         
+        (tlr, tlc) = getDrc row col (-1) (-1) bDim llen
+        (brr, brc) = getDrc row col 1    1    bDim llen
+        (blr, blc) = getDrc row col 1    (-1) bDim llen
+        (trr, trc) = getDrc row col (-1) 1    bDim llen

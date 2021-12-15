@@ -47,4 +47,24 @@ main = do
         "White won on row O in a board: "
         (Just White)
         (chkBoardWinning 14 14 t)
+
+    let t = placePieceFrmTuplesF (genBoard 17) ["BAA", "BBB", "BCC", "BDD", "BEE", 
+                                                "WAQ", "WBP", "WCO", "WDN", "WEM", 
+                                                "WQA", "WPB", "WOC", "WND", "WME",
+                                                "BQQ", "BPP", "BOO", "BNN", "BMM"]
+    putCheckRes
+        "Black wins (AA-EE): "
+        (Just Black)
+        (chkBoardWinning 0 0 t)
+    
+    putCheckRes
+        "White wins (AQ-EM): "
+        (Just White)
+        (chkBoardWinning 1 15 t)
+
+    putCheckRes
+        "White wins (QA-ME): "
+        (Just White)
+        (chkBoardWinning 16 0 t)
+
     putStrLn "Done"
