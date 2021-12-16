@@ -2,30 +2,34 @@ module Main where
 
 import Game
 import AI
+import Data.Char
 
 main :: IO ()
 main = do
-    gameLoop (genBoard 10) Black 0 10
+    gameLoop (genBoard 15) Black 0 10
 
 getPair :: IO (Int, Int)
 getPair = do
     rl <- getLine
     cl <- getLine
-    return (read rl, read cl)
+    let rlRet = ord (toUpper $ head rl) - ord 'A'
+        clRet = ord (toUpper $ head cl) - ord 'A'
+    return (rlRet, clRet)
 
-takeTurn :: Board -> Piece -> Int -> IO Board
+
+takeTurn :: Board -> Piece -> Int -> IO (Board, Int, Int)
 takeTurn board piece step = do
     putStrLn $ "Input " ++ piece2emoji piece ++ " row and col: "
-    (brow, bcol) <- getPair
-    if not (pieceValid board brow bcol)
+    (row, col) <- getPair
+    if not (pieceValid board row col)
         then do
             putStrLn "Invalid placement, try again."
             takeTurn board piece step
     else do
-        let newBoard = placePiece board piece brow bcol
-        showStepInfo Black step
+        let newBoard = placePiece board piece row col
+        showStepInfo piece step
         putBoard newBoard
-        return newBoard
+        return (newBoard, row, col)
 
 gameLoop :: Board -> Piece -> Int -> Int -> IO ()
 gameLoop board piece step totalSteps = do
@@ -33,8 +37,8 @@ gameLoop board piece step totalSteps = do
     putBoard board
     putStrLn "====================="
 
-    newBoard <- takeTurn board piece (step + 1)
+    (newBoard, row, col) <- takeTurn board piece (step + 1)
 
-    if step + 1 < totalSteps
-        then gameLoop newBoard (reversePiece piece) (step + 1) totalSteps
-    else return ()
+    case (chkBoardWinning row col newBoard) of
+        Nothing -> gameLoop newBoard (reversePiece piece) (step + 1) totalSteps
+        (Just piece) -> do putStrLn "xxx"
