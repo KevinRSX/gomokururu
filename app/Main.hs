@@ -41,4 +41,4 @@ gameLoop board piece step totalSteps = do
 
     case (chkBoardWinning row col newBoard) of
         Nothing -> gameLoop newBoard (reversePiece piece) (step + 1) totalSteps
-        (Just piece) -> do putStrLn "xxx"
+        (Just piece) -> do putStrLn (piece2emoji piece) ++ "wins"
