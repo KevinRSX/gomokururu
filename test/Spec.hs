@@ -1,5 +1,7 @@
 module Main where
 import Text.Printf
+import Data.Tree
+
 import Game
 import AI
 
@@ -14,6 +16,17 @@ putCheckRes caseName eRes res = do
     putStrLn $ prettyCaseName ++ " " ++ passStr
     where passStr = if res == eRes then  greenify "passed" else redify "failed"
           prettyCaseName = printf "%-40s" caseName
+
+showTree :: Tree Board -> IO ()
+showTree (Node board children) = do
+  putBoard board
+  showTreeHelper children
+
+showTreeHelper :: [Tree Board] -> IO ()
+showTreeHelper [] = do return ()
+showTreeHelper (c:cs) = do
+  showTree c
+  showTreeHelper cs
 
 
 boardPlacementTest :: IO ()
@@ -71,12 +84,9 @@ checkWinTest = do
 
 buildTreeTest :: IO ()
 buildTreeTest = do
-    let t = placePieceFrmTuplesF (genBoard 17) ["BAA", "BBB", "BCC", "BDD", "BEE", 
-                                                "WAQ", "WBP", "WCO", "WDN", "WEM", 
-                                                "WQA", "WPB", "WOC", "WND", "WME",
-                                                "BQQ", "BPP", "BOO", "BNN", "BMM"]
+    let t = placePieceFrmTuplesF (genBoard 15) []
     
-    putStrLn $ show $ buildTree Black t []
+    showTree $ buildTree Black t (expandBoard t) 2
 
 main :: IO ()
 main = do

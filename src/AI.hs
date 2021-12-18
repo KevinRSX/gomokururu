@@ -1,7 +1,8 @@
 module AI
   (
     getNextPos,
-    buildTree
+    buildTree,
+    expandBoard
   )
 where
 
@@ -16,9 +17,14 @@ computeScore :: Board -> Int -> Int
 computeScore _ x = x
 
 -- Ref: 2019 project
-buildTree :: Piece -> Board -> [(Int, Int)] -> Tree Board
-buildTree piece board neighbors = Node board []
+buildTree :: Piece -> Board -> [(Int, Int)] -> Int -> Tree Board
+buildTree piece board neighbors lvl = Node board $ children lvl neighbors
+  where children _ []                  = []
+        children 0 _                   = []
+        children lvl ((row, col) : xs) =
+          buildTree (reversePiece piece) (placePiece board piece row col) newNeighbors (lvl - 1) : children lvl xs
+        newNeighbors = [(14, 14)]
 
 -- Get a list (or vector) of points created by the next move
 expandBoard :: Board -> [(Int, Int)]
-expandBoard _  = []
+expandBoard _  = [(7,8), (2,2)]
