@@ -22,8 +22,8 @@ getNextPos :: Board -> Piece -> Int -> (Int, Int)
 getNextPos _ Black step = (0, step `div` 2)
 getNextPos _ White step = (9, 9 - (step `div` 2 - 1))
 
-computeScore :: Board -> Int -> Int
-computeScore _ x = x
+computeScore :: Board -> Piece -> Int
+computeScore _ _ = 1000000
 
 -- Ref: 2019 project
 buildTree :: Piece -> Board -> [(Int, Int)] -> Int -> Tree Board
@@ -33,6 +33,30 @@ buildTree piece board neighbors lvl = Node board $ children lvl neighbors
         children lvl ((row, col) : xs) =
           buildTree (reversePiece piece) (placePiece board piece row col) newNeighbors (lvl - 1) : children lvl xs
         newNeighbors = [(14, 14)]
+
+maxAlpha :: Piece -> Int -> Int -> Int -> Tree Board -> Int
+maxAlpha _ _ alpha _ (Node _ []) = alpha
+maxAlpha piece lvl alpha beta (Node b (x:xs))
+  | lvl == 0 = curScore
+  | canFinish curScore = curScore
+  | newAlpha >= beta = beta
+  | otherwise = maxAlpha piece lvl newAlpha beta (Node b xs)
+  where
+    curScore = computeScore b piece
+    canFinish score = score > 100000 || score < (-100000)
+    newAlpha = max alpha $ minBeta piece (lvl - 1) alpha beta x
+
+minBeta :: Piece -> Int -> Int -> Int -> Tree Board -> Int
+minBeta _ _ _ beta (Node _ []) = beta
+minBeta piece lvl alpha beta (Node b (x:xs))
+  | lvl == 0 = curScore
+  | canFinish curScore = curScore
+  | alpha >= newBeta = alpha
+  | otherwise = minBeta piece lvl alpha newBeta (Node b xs)
+  where
+    curScore = computeScore b piece
+    canFinish score = score > 100000 || score < (-100000)
+    newBeta = min beta $ maxAlpha piece (lvl - 1) alpha beta x
 
 -- Get a list (or vector) of points created by the next move
 expandBoard :: Board -> [(Int, Int)]
