@@ -31,8 +31,9 @@ buildTree piece board neighbors lvl = Node board $ children lvl neighbors
   where children _ []                  = []
         children 0 _                   = []
         children lvl ((row, col) : xs) =
-          buildTree (reversePiece piece) (placePiece board piece row col) newNeighbors (lvl - 1) : children lvl xs
-        newNeighbors = [(14, 14)]
+          buildTree (reversePiece piece) newBoard newNeighbors (lvl - 1) : children lvl xs
+            where newNeighbors = expandBoard $ newBoard
+                  newBoard = placePiece board piece row col
 
 maxAlpha :: Piece -> Int -> Int -> Int -> Tree Board -> Int
 maxAlpha _ _ alpha _ (Node _ []) = alpha

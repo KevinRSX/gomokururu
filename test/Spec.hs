@@ -20,6 +20,7 @@ putCheckRes caseName eRes res = do
 showTree :: Tree Board -> IO ()
 showTree (Node board children) = do
   putBoard board
+  putStr "\n"
   showTreeHelper children
 
 showTreeHelper :: [Tree Board] -> IO ()
@@ -84,9 +85,9 @@ checkWinTest = do
 
 buildTreeTest :: IO ()
 buildTreeTest = do
-    let t = placePieceFrmTuplesF (genBoard 15) []
-    
-    showTree $ buildTree Black t (expandBoard t) 2
+    putStrLn "Running buildTreeTest"
+    let t = placePieceFrmTuplesF (genBoard 15) ["BGG"]
+    showTree $ buildTree White t (expandBoard t) 2
 
 main :: IO ()
 main = do
