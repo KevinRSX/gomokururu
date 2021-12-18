@@ -8,6 +8,15 @@ where
 
 import Game
 import Data.Tree
+import Data.Vector as V
+  ( (!),
+    (//),
+  )
+
+import Data.Set as S
+  ( fromList,
+    toList
+  )
 
 getNextPos :: Board -> Piece -> Int -> (Int, Int)
 getNextPos _ Black step = (0, step `div` 2)
@@ -27,4 +36,21 @@ buildTree piece board neighbors lvl = Node board $ children lvl neighbors
 
 -- Get a list (or vector) of points created by the next move
 expandBoard :: Board -> [(Int, Int)]
-expandBoard _  = [(7,8), (2,2)]
+expandBoard db = S.toList $ S.fromList $ ebHelper 0 0 db
+  where
+    ebHelper r c db
+      | c >= bdim = ebHelper (r + 1) 0 db
+      | r >= bdim || c >= bdim = []
+      | b ! r ! c == Empty = next
+      | otherwise = validNbPositions ++ next
+      where
+        b = getBoard db 
+        bdim = dim db
+        next = ebHelper r (c + 1) db
+        validNbPositions = [
+          (r + pr, c + pc) |
+            pr <- [-1 .. 1],
+            pc <- [-1 .. 1],
+            (pr, pc) /= (0, 0),
+            pieceValid db (r+pr) (c+pc)
+          ]
