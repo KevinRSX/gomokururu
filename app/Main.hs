@@ -10,16 +10,18 @@ main = do
 
 getPair :: IO (Int, Int)
 getPair = do
-    rl <- getLine
-    cl <- getLine
-    let rlRet = ord (toUpper $ head rl) - ord 'A'
-        clRet = ord (toUpper $ head cl) - ord 'A'
+    line <- getLine
+    let (rl:cl:trash) = line
+    let rlRet = ord (toUpper rl) - ord 'A'
+        clRet = ord (toUpper cl) - ord 'A'
     return (rlRet, clRet)
 
 
 takeTurn :: Board -> Piece -> Int -> IO (Board, Int, Int)
 takeTurn board piece step = do
-    putStrLn $ "Input " ++ piece2emoji piece ++ " row and col: "
+    putStrLn $ "It's " ++ piece2emoji piece ++ " turn."
+    putStrLn $ "Please place your piece (e.g. KF):"
+    -- putStrLn $ "Input " ++ piece2emoji piece ++ " row and col (e.g. FK):"
     (row, col) <- getPair
     if not (pieceValid board row col)
         then do
@@ -39,6 +41,6 @@ gameLoop board piece step totalSteps = do
 
     (newBoard, row, col) <- takeTurn board piece (step + 1)
 
-    case (chkBoardWinning row col newBoard) of
+    case chkBoardWinning row col newBoard of
         Nothing -> gameLoop newBoard (reversePiece piece) (step + 1) totalSteps
-        (Just piece) -> do putStrLn $ (piece2emoji piece) ++ "wins"
+        (Just piece) -> do putStrLn $ piece2emoji piece ++ "wins"
