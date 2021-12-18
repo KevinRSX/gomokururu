@@ -11,7 +11,7 @@ main = do
 getPair :: IO (Int, Int)
 getPair = do
     line <- getLine
-    let (rl:cl:trash) = line
+    let (rl:cl:_) = line
     let rlRet = ord (toUpper rl) - ord 'A'
         clRet = ord (toUpper cl) - ord 'A'
     return (rlRet, clRet)
@@ -43,4 +43,4 @@ gameLoop board piece step totalSteps = do
 
     case chkBoardWinning row col newBoard of
         Nothing -> gameLoop newBoard (reversePiece piece) (step + 1) totalSteps
-        (Just piece) -> do putStrLn $ piece2emoji piece ++ "wins"
+        (Just piece) -> do putStrLn $ piece2emoji piece ++ " wins!\nGame ended."
