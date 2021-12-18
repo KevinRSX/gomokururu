@@ -15,9 +15,9 @@ putCheckRes caseName eRes res = do
     where passStr = if res == eRes then  greenify "passed" else redify "failed"
           prettyCaseName = printf "%-40s" caseName
 
-main :: IO ()
-main = do
-    -- Board placement
+
+boardPlacementTest :: IO ()
+boardPlacementTest = do
     putBoard $ genBoard 10
     putStr "\n"
     let board1 = placePiece (genBoard 10) White 4 5
@@ -26,7 +26,9 @@ main = do
     let board2 = placePiece board1 Black 3 4
     putBoard board2
 
-    -- Check win
+
+checkWinTest :: IO ()
+checkWinTest = do
     putCheckRes
         "No one is winning (5 Empty): "
         Nothing
@@ -67,4 +69,18 @@ main = do
         (Just White)
         (chkBoardWinning 16 0 t)
 
+buildTreeTest :: IO ()
+buildTreeTest = do
+    let t = placePieceFrmTuplesF (genBoard 17) ["BAA", "BBB", "BCC", "BDD", "BEE", 
+                                                "WAQ", "WBP", "WCO", "WDN", "WEM", 
+                                                "WQA", "WPB", "WOC", "WND", "WME",
+                                                "BQQ", "BPP", "BOO", "BNN", "BMM"]
+    
+    putStrLn $ show $ buildTree Black t []
+
+main :: IO ()
+main = do
+    boardPlacementTest
+    checkWinTest
+    buildTreeTest
     putStrLn "Done"
