@@ -1,5 +1,7 @@
 module Main where
 import Text.Printf
+import Data.Tree
+
 import Game
 import AI
 
@@ -15,9 +17,20 @@ putCheckRes caseName eRes res = do
     where passStr = if res == eRes then  greenify "passed" else redify "failed"
           prettyCaseName = printf "%-40s" caseName
 
-main :: IO ()
-main = do
-    -- Board placement
+showTree :: Tree Board -> IO ()
+showTree (Node board children) = do
+  putBoard board
+  showTreeHelper children
+
+showTreeHelper :: [Tree Board] -> IO ()
+showTreeHelper [] = do return ()
+showTreeHelper (c:cs) = do
+  showTree c
+  showTreeHelper cs
+
+
+boardPlacementTest :: IO ()
+boardPlacementTest = do
     putBoard $ genBoard 10
     putStr "\n"
     let board1 = placePiece (genBoard 10) White 4 5
@@ -26,7 +39,9 @@ main = do
     let board2 = placePiece board1 Black 3 4
     putBoard board2
 
-    -- Check win
+
+checkWinTest :: IO ()
+checkWinTest = do
     putCheckRes
         "No one is winning (5 Empty): "
         Nothing
@@ -67,4 +82,15 @@ main = do
         (Just White)
         (chkBoardWinning 16 0 t)
 
+buildTreeTest :: IO ()
+buildTreeTest = do
+    let t = placePieceFrmTuplesF (genBoard 15) []
+    
+    showTree $ buildTree Black t (expandBoard t) 2
+
+main :: IO ()
+main = do
+    boardPlacementTest
+    checkWinTest
+    buildTreeTest
     putStrLn "Done"
