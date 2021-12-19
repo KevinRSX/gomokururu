@@ -6,8 +6,8 @@ import Data.Char
 
 main :: IO ()
 main = do
-    let t = placePieceFrmTuplesF (genBoard 17) ["BGG"]
-    gameLoop t White 0 10
+    let t = placePieceFrmTuplesF (genBoard 15) ["BKF"]
+    gameLoop t White 0
 
 getPair :: IO (Int, Int)
 getPair = do
@@ -43,15 +43,18 @@ takeTurnAI board piece step = do
     putBoard newBoard
     return (newBoard, row, col)
 
-gameLoop :: Board -> Piece -> Int -> Int -> IO ()
-gameLoop board piece step totalSteps = do
+gameLoop :: Board -> Piece -> Int -> IO ()
+gameLoop board piece step = do
     putStrLn "\n====Current Board===="
     putBoard board
     putStrLn "====================="
 
-    (newBoard, row, col) <- takeTurnAI board piece (step + 1)
-    putStrLn $ "Score for this step: " ++ (show $ computeScore newBoard piece)
+    (newBoard, row, col) <- case piece of
+        Black -> takeTurnAI board piece (step + 1)
+        White -> takeTurnAI board piece (step + 1)
+
+    putStrLn $ "Score for step " ++ (show $ step + 1) ++ ": " ++ (show $ computeScore newBoard piece)
 
     case chkBoardWinning row col newBoard of
-        Nothing -> gameLoop newBoard (reversePiece piece) (step + 1) totalSteps
+        Nothing -> gameLoop newBoard (reversePiece piece) (step + 1)
         (Just piece) -> do putStrLn $ piece2emoji piece ++ " wins!\nGame ended."

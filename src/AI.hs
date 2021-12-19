@@ -39,7 +39,7 @@ treeLevel :: Int
 treeLevel = 5 -- buildTree
 
 searchLevel :: Int
-searchLevel = 3 -- must be less then treeLevel
+searchLevel = 3 -- must be less than or equal to treeLevel
 
 -- getNextPos: AI entry
 -- Assumes there is at least one piece on the board, otherwise buildTree will
