@@ -76,7 +76,7 @@ get8NeighboursPoss dBoard r c = validNbPositions
             pr <- [-1 .. 1],
             pc <- [-1 .. 1],
             (pr, pc) /= (0, 0),
-            pieceValid dBoard (r+pr) (c+pc)
+            inBoundary dBoard (r+pr) (c+pc)
           ]
 
 computeScore :: Board -> Piece -> Int
@@ -87,7 +87,7 @@ computeScore db p = csHelper 0 0 db p
       | c >= bdim = csHelper (r+1) 0 db p
       | r >= bdim || c >= bdim = 0
       | b ! r ! c /= p = next   -- ignore other piece / empty
-      | otherwise = 0 -- numOfGoodNb + next
+      | otherwise = numOfGoodNb + next
         where bdim = dim db
               b    = getBoard db
               next = csHelper r (c + 1) db p
@@ -115,7 +115,6 @@ maxAlpha :: Piece -> Int -> Int -> Int -> Tree Board -> Int
 -- maxAlpha _ _ alpha _ (Node _ []) = alpha
 maxAlpha piece lvl alpha beta (Node b children)
   | lvl == 0 = curScore
-  | curScore > 0 = curScore
   | otherwise = maximum $ parMap rdeepseq (minBeta piece (lvl - 1) alpha beta) children
   where
     curScore = computeScore b piece
@@ -123,7 +122,6 @@ maxAlpha piece lvl alpha beta (Node b children)
 minBeta :: Piece -> Int -> Int -> Int -> Tree Board -> Int
 minBeta piece lvl alpha beta (Node b children)
   | lvl == 0 = curScore
-  | curScore > 0 = curScore
   | otherwise = minimum $ parMap rdeepseq (maxAlpha piece (lvl - 1) alpha beta) children
   where
     curScore = computeScore b piece
@@ -146,6 +144,6 @@ expandBoard db = S.toList $ S.fromList $ ebHelper 0 0 db
             pr <- [-1 .. 1],
             pc <- [-1 .. 1],
             (pr, pc) /= (0, 0),
-            pieceValid db (r+pr) (c+pc)
+            emptyValid db (r+pr) (c+pc)
           ]
 
