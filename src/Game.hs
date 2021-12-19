@@ -13,7 +13,8 @@ module Game
     emptyValid,
     inBoundary,
     reversePiece,
-    chkBoardWinning
+    chkBoardWinning,
+    getLineFrmBoard
   )
 where
 
@@ -150,14 +151,18 @@ getLineFrmBoard board fr fc tr tc
   | fr>=bDim || fc>=bDim || tr>=bDim || tc>=bDim = error "some coordinates are beyond dimension"
   | fr == tr && fc == tc   = [b ! fr ! fc]  -- A dot
   | fr == tr               = hLine b fr fc tc
-  | fc == tc               = vLine b fc fr tr
+  | fc == tc               = vLine board fc fr tr
   | abs (fr-tr) == abs (fc-tc) = dLine b fr fc tr tc
   | otherwise      = 
     error $ show fr ++ " " ++ show fc ++ "    " ++ show tr ++" " ++ show tc ++ " genDlineFrmBoard error: coordinates are wrong"
     where b    = getBoard board
           bDim = dim board
-          hLine = error "not implemented"
-          vLine = error "not implemented"
+
+          hLine b row colA colB =
+             V.toList (V.slice colA (colB-colA+1) (b ! row))
+
+          vLine = getColFrmBoard
+
           dLine b fr fc tr tc =
             dHelper b ftr ftc
               where
