@@ -2,7 +2,8 @@ module AI
   (
     getNextPos,
     buildTree,
-    expandBoard
+    expandBoard,
+    computeScore
   )
 where
 
@@ -23,11 +24,22 @@ import Data.Set as S
 import Data.List (elemIndex)
 import Data.Maybe (fromJust)
 
+-- Constants
 minInt :: Int
 minInt = -(2 ^ 29)
 
 maxInt :: Int
 maxInt = 2 ^ 29 - 1
+
+-- Tweakable parameters
+cutoffScore :: Int
+cutoffScore = 0 -- minimax return
+
+treeLevel :: Int
+treeLevel = 5 -- buildTree
+
+searchLevel :: Int
+searchLevel = 3 -- must be less then treeLevel
 
 -- getNextPos: AI entry
 -- Assumes there is at least one piece on the board, otherwise buildTree will
@@ -35,9 +47,9 @@ maxInt = 2 ^ 29 - 1
 getNextPos :: Board -> Piece -> (Int, Int)
 getNextPos board piece = boardDiff nextBoard board
   where
-    (Node b children) = buildTree piece board neighbors 5
+    (Node b children) = buildTree piece board neighbors treeLevel
     neighbors = expandBoard board
-    minmax = map (minBeta piece 3 minInt maxInt) children
+    minmax = map (minBeta piece searchLevel minInt maxInt) children
     index = fromJust $ elemIndex (maximum minmax) minmax
     (Node nextBoard _) = children !! index
 
@@ -107,7 +119,7 @@ maxAlpha piece lvl alpha beta (Node b (x:xs))
   | otherwise = maxAlpha piece lvl newAlpha beta (Node b xs)
   where
     curScore = computeScore b piece
-    canFinish score = score > 10 || score < (-10)
+    canFinish score = score > cutoffScore
     newAlpha = max alpha $ minBeta piece (lvl - 1) alpha beta x
 
 minBeta :: Piece -> Int -> Int -> Int -> Tree Board -> Int
@@ -119,7 +131,7 @@ minBeta piece lvl alpha beta (Node b (x:xs))
   | otherwise = minBeta piece lvl alpha newBeta (Node b xs)
   where
     curScore = computeScore b piece
-    canFinish score = score > 10 || score < (-10)
+    canFinish score = score > cutoffScore
     newBeta = min beta $ maxAlpha piece (lvl - 1) alpha beta x
 
 -- Get a list (or vector) of points created by the next move

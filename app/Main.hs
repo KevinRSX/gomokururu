@@ -50,6 +50,7 @@ gameLoop board piece step totalSteps = do
     putStrLn "====================="
 
     (newBoard, row, col) <- takeTurnAI board piece (step + 1)
+    putStrLn $ "Score for this step: " ++ (show $ computeScore newBoard piece)
 
     case chkBoardWinning row col newBoard of
         Nothing -> gameLoop newBoard (reversePiece piece) (step + 1) totalSteps
