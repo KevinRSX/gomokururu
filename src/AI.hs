@@ -11,6 +11,8 @@ import Data.Tree
 import Data.Vector as V
   ( (!),
     (//),
+    concat,
+    toList
   )
 
 import Data.Set as S
@@ -18,9 +20,42 @@ import Data.Set as S
     toList
   )
 
-getNextPos :: Board -> Piece -> Int -> (Int, Int)
-getNextPos _ Black step = (0, step `div` 2)
-getNextPos _ White step = (9, 9 - (step `div` 2 - 1))
+import Data.List (elemIndex)
+import Data.Maybe (fromJust)
+
+minInt :: Int
+minInt = -(2 ^ 29)
+
+maxInt :: Int
+maxInt = 2 ^ 29 - 1
+
+-- getNextPos: AI entry
+-- Assumes there is at least one piece on the board, otherwise buildTree will
+-- return an empty tree
+getNextPos :: Board -> Piece -> (Int, Int)
+getNextPos board piece = boardDiff nextBoard board
+  where
+    (Node b children) = buildTree piece board neighbors 5
+    neighbors = expandBoard board
+    minmax = map (minBeta piece 3 minInt maxInt) children
+    index = fromJust $ elemIndex (maximum minmax) minmax
+    (Node nextBoard _) = children !! index
+
+
+-- This is shit code, kindly refrain from copying!
+-- Assumptions:
+-- 1. two boards have equal dim
+-- 2. only differ in one bit
+boardDiff :: Board -> Board -> (Int, Int)
+boardDiff oldBoard newBoard = (drow, dcol) 
+  where (drow, dcol) = quotRem diffPos (dim newBoard)
+        diffPos = getDiff oldBoard1d newBoard1d 0
+        getDiff [] [] _ = error "Invalid parameters"
+        getDiff (x:xs) (y:ys) ind | x /= y = ind
+                                  | x == y = getDiff xs ys (ind + 1)
+        oldBoard1d = (V.toList . V.concat . V.toList) (getBoard oldBoard)
+        newBoard1d = (V.toList . V.concat . V.toList) (getBoard newBoard)
+
 
 get8NeighboursPoss dBoard r c = validNbPositions
   where validNbPositions = [
@@ -72,7 +107,7 @@ maxAlpha piece lvl alpha beta (Node b (x:xs))
   | otherwise = maxAlpha piece lvl newAlpha beta (Node b xs)
   where
     curScore = computeScore b piece
-    canFinish score = score > 100000 || score < (-100000)
+    canFinish score = score > 10 || score < (-10)
     newAlpha = max alpha $ minBeta piece (lvl - 1) alpha beta x
 
 minBeta :: Piece -> Int -> Int -> Int -> Tree Board -> Int
@@ -84,7 +119,7 @@ minBeta piece lvl alpha beta (Node b (x:xs))
   | otherwise = minBeta piece lvl alpha newBeta (Node b xs)
   where
     curScore = computeScore b piece
-    canFinish score = score > 100000 || score < (-100000)
+    canFinish score = score > 10 || score < (-10)
     newBeta = min beta $ maxAlpha piece (lvl - 1) alpha beta x
 
 -- Get a list (or vector) of points created by the next move

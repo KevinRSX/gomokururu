@@ -6,7 +6,8 @@ import Data.Char
 
 main :: IO ()
 main = do
-    gameLoop (genBoard 15) Black 0 10
+    let t = placePieceFrmTuplesF (genBoard 17) ["BGG"]
+    gameLoop t White 0 10
 
 getPair :: IO (Int, Int)
 getPair = do
@@ -33,13 +34,22 @@ takeTurn board piece step = do
         putBoard newBoard
         return (newBoard, row, col)
 
+takeTurnAI :: Board -> Piece -> Int -> IO (Board, Int, Int)
+takeTurnAI board piece step = do
+    putStrLn $ "It's " ++ piece2emoji piece ++ " (AI)'s turn."
+    let (row, col) = getNextPos board piece
+        newBoard = placePiece board piece row col
+    showStepInfo piece step
+    putBoard newBoard
+    return (newBoard, row, col)
+
 gameLoop :: Board -> Piece -> Int -> Int -> IO ()
 gameLoop board piece step totalSteps = do
     putStrLn "\n====Current Board===="
     putBoard board
     putStrLn "====================="
 
-    (newBoard, row, col) <- takeTurn board piece (step + 1)
+    (newBoard, row, col) <- takeTurnAI board piece (step + 1)
 
     case chkBoardWinning row col newBoard of
         Nothing -> gameLoop newBoard (reversePiece piece) (step + 1) totalSteps
