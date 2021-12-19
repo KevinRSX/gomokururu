@@ -31,7 +31,8 @@ buildTree piece board neighbors lvl = Node board $ children lvl neighbors
   where children _ []                  = []
         children 0 _                   = []
         children lvl ((row, col) : xs) =
-          buildTree (reversePiece piece) newBoard newNeighbors (lvl - 1) : children lvl xs
+          buildTree (reversePiece piece) newBoard newNeighbors (lvl - 1)
+            : children lvl xs
             where newNeighbors = expandBoard $ newBoard
                   newBoard = placePiece board piece row col
 
@@ -79,3 +80,4 @@ expandBoard db = S.toList $ S.fromList $ ebHelper 0 0 db
             (pr, pc) /= (0, 0),
             pieceValid db (r+pr) (c+pc)
           ]
+
