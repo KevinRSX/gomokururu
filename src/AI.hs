@@ -23,6 +23,7 @@ import Data.Set as S
 
 import Data.List (elemIndex)
 import Data.Maybe (fromJust)
+import Control.Parallel.Strategies
 
 -- Constants
 minInt :: Int
@@ -33,7 +34,7 @@ maxInt = 2 ^ 29 - 1
 
 -- Tweakable parameters
 cutoffScore :: Int
-cutoffScore = 0 -- minimax return
+cutoffScore = 10 -- minimax return
 
 treeLevel :: Int
 treeLevel = 5 -- buildTree
@@ -49,7 +50,7 @@ getNextPos board piece = boardDiff nextBoard board
   where
     (Node b children) = buildTree piece board neighbors treeLevel
     neighbors = expandBoard board
-    minmax = map (minBeta piece searchLevel minInt maxInt) children
+    minmax = parMap rdeepseq (minBeta piece searchLevel minInt maxInt) children
     index = fromJust $ elemIndex (maximum minmax) minmax
     (Node nextBoard _) = children !! index
 
@@ -111,28 +112,21 @@ buildTree piece board neighbors lvl = Node board $ children lvl neighbors
                   newBoard = placePiece board piece row col
 
 maxAlpha :: Piece -> Int -> Int -> Int -> Tree Board -> Int
-maxAlpha _ _ alpha _ (Node _ []) = alpha
-maxAlpha piece lvl alpha beta (Node b (x:xs))
+-- maxAlpha _ _ alpha _ (Node _ []) = alpha
+maxAlpha piece lvl alpha beta (Node b children)
   | lvl == 0 = curScore
-  | canFinish curScore = curScore
-  | newAlpha >= beta = beta
-  | otherwise = maxAlpha piece lvl newAlpha beta (Node b xs)
+  | curScore > 0 = curScore
+  | otherwise = maximum $ parMap rdeepseq (minBeta piece (lvl - 1) alpha beta) children
   where
     curScore = computeScore b piece
-    canFinish score = score > cutoffScore
-    newAlpha = max alpha $ minBeta piece (lvl - 1) alpha beta x
 
 minBeta :: Piece -> Int -> Int -> Int -> Tree Board -> Int
-minBeta _ _ _ beta (Node _ []) = beta
-minBeta piece lvl alpha beta (Node b (x:xs))
+minBeta piece lvl alpha beta (Node b children)
   | lvl == 0 = curScore
-  | canFinish curScore = curScore
-  | alpha >= newBeta = alpha
-  | otherwise = minBeta piece lvl alpha newBeta (Node b xs)
+  | curScore > 0 = curScore
+  | otherwise = minimum $ parMap rdeepseq (maxAlpha piece (lvl - 1) alpha beta) children
   where
     curScore = computeScore b piece
-    canFinish score = score > cutoffScore
-    newBeta = min beta $ maxAlpha piece (lvl - 1) alpha beta x
 
 -- Get a list (or vector) of points created by the next move
 expandBoard :: Board -> [(Int, Int)]
