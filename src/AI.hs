@@ -99,6 +99,24 @@ computeScore db p = csHelper 0 0 db p
                         where (nr,nc) = n
 
 
+-- better heuristic???
+computeScore2 :: Board -> Piece -> Int
+computeScore2 b p =
+  sum $ map calPatternScore lines
+    where
+      -- TODO: add all the patterns
+      calPatternScore [] = 0
+      calPatternScore (x:xs) = 1
+      bDim = dim b
+      lines = [hLines, vLines, lhLinesLeft, lhLinesRight, hlLinesLeft, hlLinesRight]
+      hLines       = [ getLineFrmBoard b r 0 r bDim | r <- [0..bDim] ]
+      vLines       = [ getLineFrmBoard b 0 c bDim c | c <- [0..bDim] ]
+      -- [0..bDim] below can be adjusted to ignore diagonal lines in which length <5
+        -- Something like: [5..bDim-5]
+      lhLinesLeft  = [ getLineFrmBoard b rc 0 0 rc | rc <- [0..bDim]]             -- ///////////
+      lhLinesRight = [ getLineFrmBoard b bDim rc rc bDim | rc <- [1..bDim]]       -- ///////////
+      hlLinesLeft  = [ getLineFrmBoard b (bDim - rc) 0 bDim rc | rc <- [0..bDim]] -- \\\\\\\\\\\
+      hlLinesRight = [ getLineFrmBoard b 0 rc (bDim - rc) bDim | rc <- [1..bDim]] -- \\\\\\\\\\\
 
 -- Ref: 2019 project
 buildTree :: Piece -> Board -> [(Int, Int)] -> Int -> Tree Board
