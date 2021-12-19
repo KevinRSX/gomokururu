@@ -47,5 +47,6 @@ tests:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -N4
     dependencies:
     - gomokururu
