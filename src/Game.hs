@@ -10,7 +10,8 @@ module Game
     whoIsWinning5,
     piece2emoji,
     showStepInfo,
-    pieceValid,
+    emptyValid,
+    inBoundary,
     reversePiece,
     chkBoardWinning
   )
@@ -76,10 +77,14 @@ showStepInfo p step = do
 
 
 -- Modifying Board state
--- TODO (Kevin): Complete gameLoop
-pieceValid :: Board -> Int -> Int -> Bool
-pieceValid board row col =
-  row >= 0 && col >= 0 && row < db && col < db && (getBoard board ! row ! col) == Empty
+emptyValid :: Board -> Int -> Int -> Bool
+emptyValid board row col =
+  inBoundary board row col && (getBoard board ! row ! col) == Empty
+    where db = dim board
+
+inBoundary :: Board -> Int -> Int -> Bool
+inBoundary board row col =
+  row >= 0 && col >= 0 && row < db && col < db
     where db = dim board
 
 placePiece :: Board -> Piece -> Int -> Int -> Board

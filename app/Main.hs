@@ -24,7 +24,7 @@ takeTurn board piece step = do
     putStrLn $ "Please place your piece (e.g. KF):"
     -- putStrLn $ "Input " ++ piece2emoji piece ++ " row and col (e.g. FK):"
     (row, col) <- getPair
-    if not (pieceValid board row col)
+    if not (emptyValid board row col)
         then do
             putStrLn "Invalid placement, try again."
             takeTurn board piece step
