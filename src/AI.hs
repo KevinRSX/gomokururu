@@ -22,8 +22,35 @@ getNextPos :: Board -> Piece -> Int -> (Int, Int)
 getNextPos _ Black step = (0, step `div` 2)
 getNextPos _ White step = (9, 9 - (step `div` 2 - 1))
 
+get8NeighboursPoss dBoard r c = validNbPositions
+  where validNbPositions = [
+          (r + pr, c + pc) |
+            pr <- [-1 .. 1],
+            pc <- [-1 .. 1],
+            (pr, pc) /= (0, 0),
+            pieceValid dBoard (r+pr) (c+pc)
+          ]
+
 computeScore :: Board -> Piece -> Int
-computeScore _ _ = 1000000
+computeScore db p = csHelper 0 0 db p
+  where
+    csHelper :: Int -> Int -> Board -> Piece -> Int
+    csHelper r c db p
+      | c >= bdim = csHelper (r+1) 0 db p
+      | r >= bdim || c >= bdim = 0
+      | b ! r ! c /= p = next   -- ignore other piece / empty
+      | otherwise = 0 -- numOfGoodNb + next
+        where bdim = dim db
+              b    = getBoard db
+              next = csHelper r (c + 1) db p
+              numOfGoodNb = gnHelper b p nbs
+                where nbs = get8NeighboursPoss db r c
+                      gnHelper b p [] = 0
+                      gnHelper b p (n:ns) =
+                        fromEnum (b ! nr ! nc == p) + gnHelper b p ns
+                        where (nr,nc) = n
+
+
 
 -- Ref: 2019 project
 buildTree :: Piece -> Board -> [(Int, Int)] -> Int -> Tree Board
@@ -70,7 +97,7 @@ expandBoard db = S.toList $ S.fromList $ ebHelper 0 0 db
       | b ! r ! c == Empty = next
       | otherwise = validNbPositions ++ next
       where
-        b = getBoard db 
+        b = getBoard db
         bdim = dim db
         next = ebHelper r (c + 1) db
         validNbPositions = [
