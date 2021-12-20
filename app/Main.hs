@@ -6,7 +6,7 @@ import Data.Char
 
 main :: IO ()
 main = do
-    let t = placePieceFrmTuplesF (genBoard 15) ["BKF"]
+    let t = placePieceFrmTuplesF (genBoard 15) ["BHH"]
     gameLoop t White 0
 
 getPair :: IO (Int, Int)

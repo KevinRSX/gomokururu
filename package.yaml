@@ -24,6 +24,7 @@ dependencies:
 - vector
 - containers
 - parallel
+- deepseq
 
 library:
   source-dirs: src
@@ -36,7 +37,7 @@ executables:
     - -threaded
     - -rtsopts
     - -eventlog
-    - -with-rtsopts=-N4
+    - -with-rtsopts=-N
     dependencies:
     - gomokururu
 

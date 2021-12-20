@@ -25,6 +25,7 @@ import Data.Set as S
 import Data.List (elemIndex)
 import Data.Maybe (fromJust)
 import Control.Parallel.Strategies
+import Control.DeepSeq
 
 -- Constants
 minInt :: Int
@@ -38,7 +39,11 @@ treeLevel :: Int
 treeLevel = 4 -- buildTree
 
 searchLevel :: Int
-searchLevel = 3 -- must be less than treeLevel
+searchLevel = 2 -- must be less than treeLevel
+
+sequentialLevel :: Int
+sequentialLevel = 0 -- level to be evaluated sequentially, must be
+                    -- less than or equal to searchLevel
 
 -- getNextPos: AI entry point
 -- Assumes there is at least one piece on the board, otherwise buildTree will
@@ -97,11 +102,12 @@ computeScore db p = csHelper 0 0 db p
                         where (nr,nc) = n
 
 computeScore2 :: Board -> Piece -> Int
-computeScore2 board piece =
-  (sum $ parMap rdeepseq (lineScore2 piece) pieces) +
-  (sum $ parMap rdeepseq (lineScore3 piece) pieces) +
-  (sum $ parMap rdeepseq (lineScore4 piece) pieces) +
-  (sum $ parMap rdeepseq (lineScore5 piece) pieces)
+computeScore2 board piece = runEval $ do
+  ls2 <- rpar (force (map (lineScore2 piece) pieces))
+  ls3 <- rpar (force (map (lineScore3 piece) pieces))
+  ls4 <- rpar (force (map (lineScore4 piece) pieces))
+  ls5 <- rpar (force (map (lineScore5 piece) pieces))
+  return (sum ls2 + sum ls3 + sum ls4 + sum ls5)
   where
     pieces = getBoardLines board
 
@@ -113,6 +119,9 @@ lineScore2 piece l
       where
         lineScore2Helper piece (a:b:c:d:xs)
           | [a, b, c, d] == [Empty, piece, piece, Empty] = 10 + lineScore2 piece (b:c:d:xs)
+          | [a, b, c, d] == [reversePiece piece, piece, piece, Empty]
+            || [a, b, c, d] == [Empty, piece, piece, reversePiece piece]
+            = 5 + lineScore2 piece (b:c:d:xs)
           | otherwise = lineScore2 piece (b:c:d:xs)
 
 lineScore3 :: Piece -> [Piece] -> Int
@@ -123,6 +132,9 @@ lineScore3 piece l
       where
         lineScore3Helper piece (a:b:c:d:e:xs)
           | [a, b, c, d, e] == [Empty, piece, piece, piece, Empty] = 100 + lineScore3 piece (b:c:d:e:xs)
+          | [a, b, c, d, e] == [reversePiece piece, piece, piece, piece, Empty]
+            || [a, b, c, d, e] == [Empty, piece, piece, piece, reversePiece piece]
+            = 50 + lineScore3 piece (b:c:d:e:xs)
           | otherwise = lineScore3 piece (b:c:d:e:xs)
 
 lineScore4 :: Piece -> [Piece] -> Int
@@ -134,6 +146,9 @@ lineScore4 piece l
         lineScore4Helper piece (a:b:c:d:e:f:xs)
           | [a, b, c, d, e, f] ==
               [Empty, piece, piece, piece, piece, Empty] = 1000 + lineScore4 piece (b:c:d:e:f:xs)
+          | [a, b, c, d, e, f] == [reversePiece piece, piece, piece, piece, piece, Empty]
+            || [a, b, c, d, e, f] == [Empty, piece, piece, piece, piece, reversePiece piece]
+            = 500 + lineScore4 piece (b:c:d:e:f:xs)
           | otherwise = lineScore4 piece (b:c:d:e:f:xs)
 
 lineScore5 :: Piece -> [Piece] -> Int
@@ -161,18 +176,20 @@ buildTree piece board neighbors lvl = Node board $ children lvl neighbors
 maxAlpha :: Piece -> Int -> Tree Board -> Int
 maxAlpha piece lvl (Node b children)
   | lvl == 0 = curScore
-  | curScore <= 500 = curScore
+  | curScore <= 1000 = curScore
+  | lvl <= sequentialLevel = maximum $ parMap rdeepseq (minBeta piece (lvl - 1)) children
   | otherwise = maximum $ parMap rdeepseq (minBeta piece (lvl - 1)) children
   where
-    curScore = computeScore2 b piece - ((computeScore2 b $ reversePiece piece) `div` 2)
+    curScore = computeScore2 b piece - (computeScore2 b $ reversePiece piece)
 
 minBeta :: Piece -> Int -> Tree Board -> Int
 minBeta piece lvl (Node b children)
   | lvl == 0 = curScore
-  | curScore > 1000 = curScore
+  | curScore >= 1000 = curScore
+  | lvl <= sequentialLevel = minimum $ map (maxAlpha piece (lvl - 1)) children
   | otherwise = minimum $ parMap rdeepseq (maxAlpha piece (lvl - 1)) children
   where
-    curScore = computeScore2 b piece - ((computeScore2 b $ reversePiece piece) `div` 2)
+    curScore = computeScore2 b piece - (computeScore2 b $ reversePiece piece)
 
 -- Get a list (or vector) of points created by the next move
 expandBoard :: Board -> [(Int, Int)]
