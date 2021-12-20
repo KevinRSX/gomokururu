@@ -35,9 +35,6 @@ maxInt :: Int
 maxInt = 2 ^ 29 - 1
 
 -- Tweakable parameters
-treeLevel :: Int
-treeLevel = 4 -- buildTree
-
 searchLevel :: Int
 searchLevel = 2 -- must be less than treeLevel
 
@@ -45,13 +42,16 @@ sequentialLevel :: Int
 sequentialLevel = 0 -- level to be evaluated sequentially, must be
                     -- less than or equal to searchLevel
 
+cutoffScore :: Int
+cutoffScore = 1000
+
 -- getNextPos: AI entry point
 -- Assumes there is at least one piece on the board, otherwise buildTree will
 -- return an empty tree
 getNextPos :: Board -> Piece -> (Int, Int)
 getNextPos board piece = boardDiff nextBoard board
   where
-    (Node b children) = buildTree piece board neighbors treeLevel
+    (Node b children) = buildTree piece board neighbors searchLevel
     neighbors = expandBoard board
     minmax = parMap rdeepseq (minBeta piece searchLevel) children
     index = fromJust $ elemIndex (maximum minmax) minmax
@@ -176,7 +176,7 @@ buildTree piece board neighbors lvl = Node board $ children lvl neighbors
 maxAlpha :: Piece -> Int -> Tree Board -> Int
 maxAlpha piece lvl (Node b children)
   | lvl == 0 = curScore
-  | curScore <= 1000 = curScore
+  | curScore <= cutoffScore = curScore
   | lvl <= sequentialLevel = maximum $ parMap rdeepseq (minBeta piece (lvl - 1)) children
   | otherwise = maximum $ parMap rdeepseq (minBeta piece (lvl - 1)) children
   where
@@ -185,7 +185,7 @@ maxAlpha piece lvl (Node b children)
 minBeta :: Piece -> Int -> Tree Board -> Int
 minBeta piece lvl (Node b children)
   | lvl == 0 = curScore
-  | curScore >= 1000 = curScore
+  | curScore >= cutoffScore = curScore
   | lvl <= sequentialLevel = minimum $ map (maxAlpha piece (lvl - 1)) children
   | otherwise = minimum $ parMap rdeepseq (maxAlpha piece (lvl - 1)) children
   where
