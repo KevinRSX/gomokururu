@@ -14,7 +14,7 @@ module Game
     inBoundary,
     reversePiece,
     chkBoardWinning,
-    getLineFrmBoard
+    getBoardLines
   )
 where
 
@@ -114,8 +114,24 @@ placePieceFrmTuplesF board cList = placePieceFrmTuples board pList
             r = ord cr - ord 'A'
             c = ord cc - ord 'A'
 
+getBoardLines :: Board -> [[Piece]]
+getBoardLines dBoard =
+  hLines ++ vLines ++ lhLinesLeft ++ lhLinesRight ++ hlLinesLeft ++ hlLinesRight
+  where
+    bDim = dim dBoard
+    b = dBoard
+    max_rc = bDim - 1
+    hLines       = [ getLineFrmBoard b r 0 r max_rc | r <- [0..max_rc] ]
+    vLines       = [ getLineFrmBoard b 0 c max_rc c | c <- [0..max_rc] ]
+    -- [0..bDim] below can be adjusted to ignore diagonal lines in which length <5
+      -- Something like: [5..bDim-5]
+    lhLinesLeft  = [ getLineFrmBoard b rc 0 0 rc | rc <- [0..max_rc]]             -- ///////////
+    lhLinesRight = [ getLineFrmBoard b max_rc rc rc max_rc | rc <- [1..max_rc]]       -- ///////////
+    hlLinesLeft  = [ getLineFrmBoard b (max_rc - rc) 0 max_rc rc | rc <- [0..max_rc]] -- \\\\\\\\\\\
+    hlLinesRight = [ getLineFrmBoard b 0 rc (max_rc - rc) max_rc | rc <- [1..max_rc]] -- \\\\\\\\\\\ 
+
+
 -- Check win
--- TODO (Kevin): Generic check win function
 whoIsWinning :: [Piece] -> Int -> Maybe Piece
 whoIsWinning line cLen = helper (group line) cLen
   where

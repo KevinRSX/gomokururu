@@ -3,7 +3,8 @@ module AI
     getNextPos,
     buildTree,
     expandBoard,
-    computeScore
+    computeScore,
+    computeScore2,
   )
 where
 
@@ -37,7 +38,7 @@ cutoffScore :: Int
 cutoffScore = 10 -- minimax return
 
 treeLevel :: Int
-treeLevel = 5 -- buildTree
+treeLevel = 4 -- buildTree
 
 searchLevel :: Int
 searchLevel = 3 -- must be less than or equal to treeLevel
@@ -98,25 +99,56 @@ computeScore db p = csHelper 0 0 db p
                         fromEnum (b ! nr ! nc == p) + gnHelper b p ns
                         where (nr,nc) = n
 
-
--- better heuristic???
 computeScore2 :: Board -> Piece -> Int
-computeScore2 b p =
-  sum $ map calPatternScore lines
-    where
-      -- TODO: add all the patterns
-      calPatternScore [] = 0
-      calPatternScore (x:xs) = 1
-      bDim = dim b
-      lines = [hLines, vLines, lhLinesLeft, lhLinesRight, hlLinesLeft, hlLinesRight]
-      hLines       = [ getLineFrmBoard b r 0 r bDim | r <- [0..bDim] ]
-      vLines       = [ getLineFrmBoard b 0 c bDim c | c <- [0..bDim] ]
-      -- [0..bDim] below can be adjusted to ignore diagonal lines in which length <5
-        -- Something like: [5..bDim-5]
-      lhLinesLeft  = [ getLineFrmBoard b rc 0 0 rc | rc <- [0..bDim]]             -- ///////////
-      lhLinesRight = [ getLineFrmBoard b bDim rc rc bDim | rc <- [1..bDim]]       -- ///////////
-      hlLinesLeft  = [ getLineFrmBoard b (bDim - rc) 0 bDim rc | rc <- [0..bDim]] -- \\\\\\\\\\\
-      hlLinesRight = [ getLineFrmBoard b 0 rc (bDim - rc) bDim | rc <- [1..bDim]] -- \\\\\\\\\\\
+computeScore2 board piece =
+  (sum $ map (lineScore2 piece) pieces) +
+  (sum $ map (lineScore3 piece) pieces) +
+  (sum $ map (lineScore4 piece) pieces) +
+  (sum $ map (lineScore5 piece) pieces)
+  where
+    pieces = getBoardLines board
+
+lineScore2 :: Piece -> [Piece] -> Int
+lineScore2 _ [] = 0
+lineScore2 piece l
+  | length l >= 4 = lineScore2Helper piece l
+  | otherwise     = 0
+      where
+        lineScore2Helper piece (a:b:c:d:xs)
+          | [a, b, c, d] == [Empty, piece, piece, Empty] = 10 + lineScore2 piece (b:c:d:xs)
+          | otherwise = lineScore2 piece (b:c:d:xs)
+
+lineScore3 :: Piece -> [Piece] -> Int
+lineScore3 _ [] = 0
+lineScore3 piece l
+  | length l >= 5 = lineScore3Helper piece l
+  | otherwise     = 0
+      where
+        lineScore3Helper piece (a:b:c:d:e:xs)
+          | [a, b, c, d, e] == [Empty, piece, piece, piece, Empty] = 100 + lineScore3 piece (b:c:d:e:xs)
+          | otherwise = lineScore3 piece (b:c:d:e:xs)
+
+lineScore4 :: Piece -> [Piece] -> Int
+lineScore4 _ [] = 0
+lineScore4 piece l
+  | length l >= 6 = lineScore4Helper piece l
+  | otherwise     = 0
+      where
+        lineScore4Helper piece (a:b:c:d:e:f:xs)
+          | [a, b, c, d, e, f] ==
+              [Empty, piece, piece, piece, piece, Empty] = 1000 + lineScore4 piece (b:c:d:e:f:xs)
+          | otherwise = lineScore4 piece (b:c:d:e:f:xs)
+
+lineScore5 :: Piece -> [Piece] -> Int
+lineScore5 _ [] = 0
+lineScore5 piece l
+  | length l >= 5 = lineScore5Helper piece l
+  | otherwise     = 0
+      where
+        lineScore5Helper piece (a:b:c:d:e:xs)
+          | [a, b, c, d, e] ==
+              [piece, piece, piece, piece, piece] = 10000 + lineScore5 piece (b:c:d:e:xs)
+          | otherwise = lineScore5 piece (b:c:d:e:xs)
 
 -- Ref: 2019 project
 buildTree :: Piece -> Board -> [(Int, Int)] -> Int -> Tree Board
@@ -135,14 +167,14 @@ maxAlpha piece lvl alpha beta (Node b children)
   | lvl == 0 = curScore
   | otherwise = maximum $ parMap rdeepseq (minBeta piece (lvl - 1) alpha beta) children
   where
-    curScore = computeScore b piece
+    curScore = computeScore2 b piece
 
 minBeta :: Piece -> Int -> Int -> Int -> Tree Board -> Int
 minBeta piece lvl alpha beta (Node b children)
   | lvl == 0 = curScore
   | otherwise = minimum $ parMap rdeepseq (maxAlpha piece (lvl - 1) alpha beta) children
   where
-    curScore = computeScore b piece
+    curScore = computeScore2 b piece
 
 -- Get a list (or vector) of points created by the next move
 expandBoard :: Board -> [(Int, Int)]

@@ -53,7 +53,7 @@ gameLoop board piece step = do
         Black -> takeTurnAI board piece (step + 1)
         White -> takeTurnAI board piece (step + 1)
 
-    putStrLn $ "Score for step " ++ (show $ step + 1) ++ ": " ++ (show $ computeScore newBoard piece)
+    putStrLn $ "Score for step " ++ (show $ step + 1) ++ ": " ++ (show $ computeScore2 newBoard piece)
 
     case chkBoardWinning row col newBoard of
         Nothing -> gameLoop newBoard (reversePiece piece) (step + 1)

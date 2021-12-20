@@ -91,7 +91,7 @@ buildTreeTest = do
 
 main :: IO ()
 main = do
-    boardPlacementTest
-    checkWinTest
-    buildTreeTest
+    -- boardPlacementTest
+    -- checkWinTest
+    -- buildTreeTest
     putStrLn "Done"
