@@ -51,7 +51,7 @@ cutoffScore = 1000
 getNextPos :: Board -> Piece -> (Int, Int)
 getNextPos board piece = boardDiff nextBoard board
   where
-    (Node b children) = buildTree piece board neighbors searchLevel
+    (Node b children) = buildTree piece board neighbors (searchLevel + 1)
     neighbors = expandBoard board
     minmax = parMap rdeepseq (minBeta piece searchLevel) children
     index = fromJust $ elemIndex (maximum minmax) minmax
@@ -176,8 +176,8 @@ buildTree piece board neighbors lvl = Node board $ children lvl neighbors
 maxAlpha :: Piece -> Int -> Tree Board -> Int
 maxAlpha piece lvl (Node b children)
   | lvl == 0 = curScore
-  | curScore <= cutoffScore = curScore
-  | lvl <= sequentialLevel = maximum $ parMap rdeepseq (minBeta piece (lvl - 1)) children
+  | curScore <= 0 = curScore
+  | lvl <= sequentialLevel = maximum $ map (minBeta piece (lvl - 1)) children
   | otherwise = maximum $ parMap rdeepseq (minBeta piece (lvl - 1)) children
   where
     curScore = computeScore2 b piece - (computeScore2 b $ reversePiece piece)
