@@ -34,16 +34,13 @@ maxInt :: Int
 maxInt = 2 ^ 29 - 1
 
 -- Tweakable parameters
-cutoffScore :: Int
-cutoffScore = 10 -- minimax return
-
 treeLevel :: Int
 treeLevel = 4 -- buildTree
 
 searchLevel :: Int
-searchLevel = 3 -- must be less than or equal to treeLevel
+searchLevel = 3 -- must be less than treeLevel
 
--- getNextPos: AI entry
+-- getNextPos: AI entry point
 -- Assumes there is at least one piece on the board, otherwise buildTree will
 -- return an empty tree
 getNextPos :: Board -> Piece -> (Int, Int)
@@ -51,7 +48,7 @@ getNextPos board piece = boardDiff nextBoard board
   where
     (Node b children) = buildTree piece board neighbors treeLevel
     neighbors = expandBoard board
-    minmax = parMap rdeepseq (minBeta piece searchLevel minInt maxInt) children
+    minmax = parMap rdeepseq (minBeta piece searchLevel) children
     index = fromJust $ elemIndex (maximum minmax) minmax
     (Node nextBoard _) = children !! index
 
@@ -161,20 +158,21 @@ buildTree piece board neighbors lvl = Node board $ children lvl neighbors
             where newNeighbors = expandBoard $ newBoard
                   newBoard = placePiece board piece row col
 
-maxAlpha :: Piece -> Int -> Int -> Int -> Tree Board -> Int
--- maxAlpha _ _ alpha _ (Node _ []) = alpha
-maxAlpha piece lvl alpha beta (Node b children)
+maxAlpha :: Piece -> Int -> Tree Board -> Int
+maxAlpha piece lvl (Node b children)
   | lvl == 0 = curScore
-  | otherwise = maximum $ parMap rdeepseq (minBeta piece (lvl - 1) alpha beta) children
+  | curScore <= 500 = curScore
+  | otherwise = maximum $ parMap rdeepseq (minBeta piece (lvl - 1)) children
   where
-    curScore = computeScore2 b piece
+    curScore = computeScore2 b piece - ((computeScore2 b $ reversePiece piece) `div` 2)
 
-minBeta :: Piece -> Int -> Int -> Int -> Tree Board -> Int
-minBeta piece lvl alpha beta (Node b children)
+minBeta :: Piece -> Int -> Tree Board -> Int
+minBeta piece lvl (Node b children)
   | lvl == 0 = curScore
-  | otherwise = minimum $ parMap rdeepseq (maxAlpha piece (lvl - 1) alpha beta) children
+  | curScore > 1000 = curScore
+  | otherwise = minimum $ parMap rdeepseq (maxAlpha piece (lvl - 1)) children
   where
-    curScore = computeScore2 b piece
+    curScore = computeScore2 b piece - ((computeScore2 b $ reversePiece piece) `div` 2)
 
 -- Get a list (or vector) of points created by the next move
 expandBoard :: Board -> [(Int, Int)]
