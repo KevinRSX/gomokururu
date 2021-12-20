@@ -2,5 +2,6 @@
 dist-newstyle/
 
 *.lock
+*.eventlog
 gomokururu.cabal
 *~

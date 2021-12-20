@@ -98,10 +98,10 @@ computeScore db p = csHelper 0 0 db p
 
 computeScore2 :: Board -> Piece -> Int
 computeScore2 board piece =
-  (sum $ map (lineScore2 piece) pieces) +
-  (sum $ map (lineScore3 piece) pieces) +
-  (sum $ map (lineScore4 piece) pieces) +
-  (sum $ map (lineScore5 piece) pieces)
+  (sum $ parMap rdeepseq (lineScore2 piece) pieces) +
+  (sum $ parMap rdeepseq (lineScore3 piece) pieces) +
+  (sum $ parMap rdeepseq (lineScore4 piece) pieces) +
+  (sum $ parMap rdeepseq (lineScore5 piece) pieces)
   where
     pieces = getBoardLines board
 
