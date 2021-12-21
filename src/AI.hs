@@ -3,8 +3,7 @@ module AI
     getNextPos,
     buildTree,
     expandBoard,
-    computeScore,
-    computeScore2,
+    computeScore2
   )
 where
 
@@ -53,7 +52,7 @@ getNextPos board piece = boardDiff nextBoard board
   where
     (Node b children) = buildTree piece board neighbors (searchLevel + 1)
     neighbors = expandBoard board
-    minmax = parMap rdeepseq (minBeta piece searchLevel) children
+    minmax = map (minBeta piece searchLevel minInt maxInt) children
     index = fromJust $ elemIndex (maximum minmax) minmax
     (Node nextBoard _) = children !! index
 
@@ -82,32 +81,13 @@ get8NeighboursPoss dBoard r c = validNbPositions
             inBoundary dBoard (r+pr) (c+pc)
           ]
 
-computeScore :: Board -> Piece -> Int
-computeScore db p = csHelper 0 0 db p
-  where
-    csHelper :: Int -> Int -> Board -> Piece -> Int
-    csHelper r c db p
-      | c >= bdim = csHelper (r+1) 0 db p
-      | r >= bdim || c >= bdim = 0
-      | b ! r ! c /= p = next   -- ignore other piece / empty
-      | otherwise = numOfGoodNb + next
-        where bdim = dim db
-              b    = getBoard db
-              next = csHelper r (c + 1) db p
-              numOfGoodNb = gnHelper b p nbs
-                where nbs = get8NeighboursPoss db r c
-                      gnHelper b p [] = 0
-                      gnHelper b p (n:ns) =
-                        fromEnum (b ! nr ! nc == p) + gnHelper b p ns
-                        where (nr,nc) = n
-
 computeScore2 :: Board -> Piece -> Int
-computeScore2 board piece = runEval $ do
-  ls2 <- rpar (force (map (lineScore2 piece) pieces))
-  ls3 <- rpar (force (map (lineScore3 piece) pieces))
-  ls4 <- rpar (force (map (lineScore4 piece) pieces))
-  ls5 <- rpar (force (map (lineScore5 piece) pieces))
-  return (sum ls2 + sum ls3 + sum ls4 + sum ls5)
+computeScore2 board piece =
+  let ls2 = map (lineScore2 piece) pieces
+      ls3 = map (lineScore3 piece) pieces
+      ls4 = map (lineScore4 piece) pieces
+      ls5 = map (lineScore5 piece) pieces
+  in sum ls2 + sum ls3 + sum ls4 + sum ls5
   where
     pieces = getBoardLines board
 
@@ -173,23 +153,29 @@ buildTree piece board neighbors lvl = Node board $ children lvl neighbors
             where newNeighbors = expandBoard $ newBoard
                   newBoard = placePiece board piece row col
 
-maxAlpha :: Piece -> Int -> Tree Board -> Int
-maxAlpha piece lvl (Node b children)
+maxAlpha :: Piece -> Int -> Int -> Int -> Tree Board -> Int
+maxAlpha _ _ alpha _ (Node _ []) = alpha
+maxAlpha piece lvl alpha beta (Node b (x:xs))
   | lvl == 0 = curScore
-  | curScore <= 0 = curScore
-  | lvl <= sequentialLevel = maximum $ map (minBeta piece (lvl - 1)) children
-  | otherwise = maximum $ parMap rdeepseq (minBeta piece (lvl - 1)) children
+  | canFinish curScore = curScore
+  | newAlpha >= beta = beta
+  | otherwise = maxAlpha piece lvl newAlpha beta (Node b xs)
   where
-    curScore = computeScore2 b piece - (computeScore2 b $ reversePiece piece)
+    curScore = computeScore2 b piece - computeScore2 b (reversePiece piece)
+    canFinish score = score < 0
+    newAlpha = max alpha $ minBeta piece (lvl - 1) alpha beta x
 
-minBeta :: Piece -> Int -> Tree Board -> Int
-minBeta piece lvl (Node b children)
+minBeta :: Piece -> Int -> Int -> Int -> Tree Board -> Int
+minBeta _ _ _ beta (Node _ []) = beta
+minBeta piece lvl alpha beta (Node b (x:xs))
   | lvl == 0 = curScore
-  | curScore >= cutoffScore = curScore
-  | lvl <= sequentialLevel = minimum $ map (maxAlpha piece (lvl - 1)) children
-  | otherwise = minimum $ parMap rdeepseq (maxAlpha piece (lvl - 1)) children
+  | canFinish curScore = curScore
+  | alpha >= newBeta = alpha
+  | otherwise = minBeta piece lvl alpha newBeta (Node b xs)
   where
-    curScore = computeScore2 b piece - (computeScore2 b $ reversePiece piece)
+    curScore = computeScore2 b piece -  computeScore2 b (reversePiece piece)
+    canFinish score = score > cutoffScore
+    newBeta = min beta $ maxAlpha piece (lvl - 1) alpha beta x
 
 -- Get a list (or vector) of points created by the next move
 expandBoard :: Board -> [(Int, Int)]
