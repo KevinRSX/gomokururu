@@ -63,12 +63,13 @@ getNextPos board piece = boardDiff nextBoard board
 -- 1. two boards have equal dim
 -- 2. only differ in one bit
 boardDiff :: Board -> Board -> (Int, Int)
-boardDiff oldBoard newBoard = (drow, dcol) 
+boardDiff oldBoard newBoard = (drow, dcol)
   where (drow, dcol) = quotRem diffPos (dim newBoard)
         diffPos = getDiff oldBoard1d newBoard1d 0
         getDiff [] [] _ = error "Invalid parameters"
         getDiff (x:xs) (y:ys) ind | x /= y = ind
                                   | x == y = getDiff xs ys (ind + 1)
+        getDiff _ _ _ = error "unknown error"
         oldBoard1d = (V.toList . V.concat . V.toList) (getBoard oldBoard)
         newBoard1d = (V.toList . V.concat . V.toList) (getBoard newBoard)
 
@@ -118,11 +119,14 @@ lineScore2 piece l
   | otherwise     = 0
       where
         lineScore2Helper piece (a:b:c:d:xs)
-          | [a, b, c, d] == [Empty, piece, piece, Empty] = 10 + lineScore2 piece (b:c:d:xs)
-          | [a, b, c, d] == [reversePiece piece, piece, piece, Empty]
-            || [a, b, c, d] == [Empty, piece, piece, reversePiece piece]
-            = 5 + lineScore2 piece (b:c:d:xs)
-          | otherwise = lineScore2 piece (b:c:d:xs)
+          | pieces4 == [Empty, piece, piece, Empty] = 10 + next
+          | pieces4 == [reversePiece piece, piece, piece, Empty]
+            || pieces4 == [Empty, piece, piece, reversePiece piece]
+            = 5 + next
+          | otherwise = next
+          where pieces4 = [a, b, c, d]
+                next    = lineScore2 piece (b:c:d:xs)
+        lineScore2Helper _ _ = error "unknown error"
 
 lineScore3 :: Piece -> [Piece] -> Int
 lineScore3 _ [] = 0
@@ -131,11 +135,14 @@ lineScore3 piece l
   | otherwise     = 0
       where
         lineScore3Helper piece (a:b:c:d:e:xs)
-          | [a, b, c, d, e] == [Empty, piece, piece, piece, Empty] = 100 + lineScore3 piece (b:c:d:e:xs)
-          | [a, b, c, d, e] == [reversePiece piece, piece, piece, piece, Empty]
-            || [a, b, c, d, e] == [Empty, piece, piece, piece, reversePiece piece]
-            = 50 + lineScore3 piece (b:c:d:e:xs)
-          | otherwise = lineScore3 piece (b:c:d:e:xs)
+          | pieces5 == [Empty, piece, piece, piece, Empty] = 100 + next
+          | pieces5 == [reversePiece piece, piece, piece, piece, Empty]
+            || pieces5 == [Empty, piece, piece, piece, reversePiece piece]
+            = 50 + next
+          | otherwise = next
+          where pieces5 = [a, b, c, d, e]
+                next = lineScore3 piece (b:c:d:e:xs)
+        lineScore3Helper _ _ = error "unknown error"
 
 lineScore4 :: Piece -> [Piece] -> Int
 lineScore4 _ [] = 0
@@ -144,12 +151,15 @@ lineScore4 piece l
   | otherwise     = 0
       where
         lineScore4Helper piece (a:b:c:d:e:f:xs)
-          | [a, b, c, d, e, f] ==
-              [Empty, piece, piece, piece, piece, Empty] = 1000 + lineScore4 piece (b:c:d:e:f:xs)
-          | [a, b, c, d, e, f] == [reversePiece piece, piece, piece, piece, piece, Empty]
-            || [a, b, c, d, e, f] == [Empty, piece, piece, piece, piece, reversePiece piece]
-            = 500 + lineScore4 piece (b:c:d:e:f:xs)
-          | otherwise = lineScore4 piece (b:c:d:e:f:xs)
+          | piece6 ==
+              [Empty, piece, piece, piece, piece, Empty] = 1000 + next
+          | piece6 == [reversePiece piece, piece, piece, piece, piece, Empty]
+            || piece6 == [Empty, piece, piece, piece, piece, reversePiece piece]
+            = 500 + next
+          | otherwise = next
+          where piece6 = [a,b,c,d,e,f]
+                next = lineScore4 piece (b:c:d:e:f:xs)
+        lineScore4Helper _ _ = error "unknown error"
 
 lineScore5 :: Piece -> [Piece] -> Int
 lineScore5 _ [] = 0
@@ -161,6 +171,7 @@ lineScore5 piece l
           | [a, b, c, d, e] ==
               [piece, piece, piece, piece, piece] = 10000 + lineScore5 piece (b:c:d:e:xs)
           | otherwise = lineScore5 piece (b:c:d:e:xs)
+        lineScore5Helper _ _ = error "unknown error"
 
 -- Ref: 2019 project
 buildTree :: Piece -> Board -> [(Int, Int)] -> Int -> Tree Board
@@ -170,7 +181,7 @@ buildTree piece board neighbors lvl = Node board $ children lvl neighbors
         children lvl ((row, col) : xs) =
           buildTree (reversePiece piece) newBoard newNeighbors (lvl - 1)
             : children lvl xs
-            where newNeighbors = expandBoard $ newBoard
+            where newNeighbors = expandBoard newBoard
                   newBoard = placePiece board piece row col
 
 maxAlpha :: Piece -> Int -> Tree Board -> Int
@@ -180,7 +191,7 @@ maxAlpha piece lvl (Node b children)
   | lvl <= sequentialLevel = maximum $ parMap rdeepseq (minBeta piece (lvl - 1)) children
   | otherwise = maximum $ parMap rdeepseq (minBeta piece (lvl - 1)) children
   where
-    curScore = computeScore2 b piece - (computeScore2 b $ reversePiece piece)
+    curScore = computeScore2 b piece - computeScore2 b (reversePiece piece)
 
 minBeta :: Piece -> Int -> Tree Board -> Int
 minBeta piece lvl (Node b children)
@@ -189,7 +200,7 @@ minBeta piece lvl (Node b children)
   | lvl <= sequentialLevel = minimum $ map (maxAlpha piece (lvl - 1)) children
   | otherwise = minimum $ parMap rdeepseq (maxAlpha piece (lvl - 1)) children
   where
-    curScore = computeScore2 b piece - (computeScore2 b $ reversePiece piece)
+    curScore = computeScore2 b piece - computeScore2 b (reversePiece piece)
 
 -- Get a list (or vector) of points created by the next move
 expandBoard :: Board -> [(Int, Int)]

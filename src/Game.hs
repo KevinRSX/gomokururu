@@ -214,25 +214,17 @@ getDrc fr fc dr dc dim len
 -- TODO: create type of Vector (Vector a)
 getStarLines :: Int -> Int -> Int -> Board -> [[Piece]]
 getStarLines row col llen board =
-  -- horizontal
   [
-  -- v 1.0 - lengthy
-  -- V.toList (V.slice (col-ltLength+1) ltLength (getBoard board ! row)),
-  -- V.toList (V.slice col              rtLength (getBoard board ! row)),
-
-  -- v 2.0 - concise
+  -- horizontal
   V.toList (V.slice hi hn (b ! row)),
   -- verticals
   getColFrmBoard board col ra rb,
   -- diagonals
-
   getLineFrmBoard board tlr tlc brr brc,
   getLineFrmBoard board blr blc trr trc
   ]
   where b    = getBoard board
         bDim = dim board
-        -- ltLength = if col-llen < 0 then col+1 else llen
-        -- rtLength = if col+llen > bDim then bDim - col else llen
         hi = if col - llen < 0 then 0 else col - llen + 1
         hn = if hi + hLen > bDim then bDim - hi else hLen
         hLen = llen*2-1
