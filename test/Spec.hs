@@ -12,9 +12,12 @@ defANSI = "\ESC[0m"
 redify s = redANSI ++ s ++ defANSI
 greenify s = greenANSI ++ s ++ defANSI
 
+putCheckRes :: (PrintfArg p, Eq a) => p -> a -> a -> IO Bool
 putCheckRes caseName eRes res = do
     putStrLn $ prettyCaseName ++ " " ++ passStr
-    where passStr = if res == eRes then  greenify "passed" else redify "failed"
+    return match
+    where match = res == eRes
+          passStr = if res == eRes then  greenify "passed" else redify "failed"
           prettyCaseName = printf "%-40s" caseName
 
 showTree :: Tree Board -> IO ()
@@ -41,47 +44,57 @@ boardPlacementTest = do
     putBoard board2
 
 
-checkWinTest :: IO ()
-checkWinTest = do
-    putCheckRes
+testWhoIsWinning :: IO Bool
+testWhoIsWinning = do
+    c1 <- putCheckRes
         "No one is winning (5 Empty): "
         Nothing
         (whoIsWinning5 $ replicate 4 Black ++ replicate 4 White ++ replicate 5 Empty)
 
-    putCheckRes
+    c2 <- putCheckRes
         "Black is winning (5 Black): "
         (Just Black)
         (whoIsWinning5 $ replicate 4 White ++ [Empty, White] ++ replicate 5 Black)
 
-    putCheckRes
+    c3 <- putCheckRes
         "White is winning (5 White): "
         (Just White)
         (whoIsWinning5 $ replicate 4 Black ++ replicate 5 White)
-    
+
+    return $ c1 && c2 && c3
+
+testChkBoardWinning :: IO Bool
+testChkBoardWinning = do
     let t = placePieceFrmTuplesF (genBoard 17) ["BKJ","WKJ","BLM","BBC", "WOM", "WON","WOO","WOP","WOQ"]
-    putCheckRes
+
+    c1 <- putCheckRes
         "White won on row O in a board: "
         (Just White)
         (chkBoardWinning 14 14 t)
 
-    let t = placePieceFrmTuplesF (genBoard 17) ["BAA", "BBB", "BCC", "BDD", "BEE", 
-                                                "WAQ", "WBP", "WCO", "WDN", "WEM", 
+    let t = placePieceFrmTuplesF (genBoard 17) ["BAA", "BBB", "BCC", "BDD", "BEE",
+                                                "WAQ", "WBP", "WCO", "WDN", "WEM",
                                                 "WQA", "WPB", "WOC", "WND", "WME",
                                                 "BQQ", "BPP", "BOO", "BNN", "BMM"]
-    putCheckRes
+
+    -- let t = placePieceFrmTuplesF (genBoard 17) ["BAA"]
+
+    c2 <- putCheckRes
         "Black wins (AA-EE): "
         (Just Black)
         (chkBoardWinning 0 0 t)
-    
-    putCheckRes
+
+    c3 <- putCheckRes
         "White wins (AQ-EM): "
         (Just White)
         (chkBoardWinning 1 15 t)
 
-    putCheckRes
+    c4 <- putCheckRes
         "White wins (QA-ME): "
         (Just White)
         (chkBoardWinning 16 0 t)
+
+    return $ c1 && c2 && c3 && c4
 
 buildTreeTest :: IO ()
 buildTreeTest = do
@@ -92,6 +105,17 @@ buildTreeTest = do
 main :: IO ()
 main = do
     -- boardPlacementTest
-    -- checkWinTest
     -- buildTreeTest
-    putStrLn "Done"
+
+    putStrLn "> Running testcases..."
+
+    let res = sequence [
+                testWhoIsWinning,
+                testChkBoardWinning
+                ]
+    allPassed <- and <$> res
+    if allPassed then
+        putStrLn "> Done"
+    else
+        error $ redify "Some test cases failed"
+

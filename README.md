@@ -10,12 +10,11 @@ This is a class project for [COMS W4995 Parallel Functional Programming, Fall 20
 - Kevin Xue
 - Andreas Cheng
 
-## Compilation, Execution, and Testing
+## Compilation and Execution
 
 To compile, run `stack build` to build the minimal project.
 
-To execute the game, run `stack run gomokururu-exe`.
-    (To be updated)
+To execute the game, run `stack run`.
 
 More information can be found at [The Haskell Tool Stack Homepage](https://docs.haskellstack.org/en/stable/README/).
 
@@ -23,4 +22,10 @@ More information can be found at [The Haskell Tool Stack Homepage](https://docs.
 
 To test the main functions, run `stack test`.
 
-To rapidly load and test the main library, run `stack ghci` then run `:l <hs filename>`
+To rapidly load and test the libraries, run `stack ghci` then run `:l <hs filename>`
+
+## Environment
+
+This project has only been tested on macOS Big Sur 11.3.1.
+
+Emojis and full-width characters might fail on Windows. One workaround, for now, is to replace those Unicode characters with ASCII characters.
