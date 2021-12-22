@@ -1,0 +1,27 @@
+Score for step 10: 20
+Game ended at step limit.
+ 737,834,919,152 bytes allocated in the heap
+  21,756,794,392 bytes copied during GC
+      51,662,520 bytes maximum residency (194 sample(s))
+         549,192 bytes maximum slop
+             148 MiB total memory in use (0 MB lost due to fragmentation)
+
+                                     Tot time (elapsed)  Avg pause  Max pause
+  Gen  0     193981 colls, 193981 par   38.909s  10.783s     0.0001s    0.0101s
+  Gen  1       194 colls,   193 par    1.396s   0.404s     0.0021s    0.0181s
+
+  Parallel GC work balance: 85.85% (serial 0%, perfect 100%)
+
+  TASKS: 10 (1 bound, 9 peak workers (9 total), using -N4)
+
+  SPARKS: 2812401 (39876 converted, 0 overflowed, 0 dud, 1996572 GC'd, 775953 fizzled)
+
+  INIT    time    0.001s  (  0.017s elapsed)
+  MUT     time  192.502s  ( 49.513s elapsed)
+  GC      time   40.305s  ( 11.186s elapsed)
+  EXIT    time    0.000s  (  0.003s elapsed)
+  Total   time  232.808s  ( 60.719s elapsed)
+
+  Alloc rate    3,832,862,517 bytes per MUT second
+
+  Productivity  82.7% of total user, 81.5% of total elapsed

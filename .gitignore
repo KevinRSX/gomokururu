@@ -4,4 +4,5 @@ dist-newstyle/
 *.lock
 *.eventlog
 gomokururu.cabal
+.DS_Store
 *~
