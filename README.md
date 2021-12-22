@@ -39,7 +39,7 @@ threadscope gomokururu-exe.eventlog
 
 
 
-### Tweaking parameters
+### Tweaking Parameters
 
 Unfortunately, the parameters cannot be configured as command line arguments right now. Instead, in `src/AI.hs`, change the following parameters
 
