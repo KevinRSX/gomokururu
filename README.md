@@ -23,7 +23,7 @@ To rapidly load and test the libraries, run `stack ghci` then run `:l <hs filena
 
 ## Reproducing Results
 
-To reproduce the results in our report, you should run the main game with specific number of cores with proper RTS options.
+To reproduce the results in our report, you need run the main game with specific number of cores and proper RTS options.
 
 ```
 stack run -- +RTS -N4 -l -s
@@ -56,13 +56,13 @@ cutoffScore :: Int
 cutoffScore = 1000
 ```
 
-Note the caveat: `searchLevel = 2` means you are searching for three levels, because we count from 0 to 2 in minimax.
+Note the caveat: `searchLevel = 2` means searching for three levels, because we count from 0 to 2 in minimax.
 
 
 
-### Playing as Human
+## Playing as Human
 
-The game can be easily configured to play as PvP or PvE or EvE. In `app/Main.hs`,
+One of both of AIs can be replaced by human players. To do this, in `app/Main.hs`,
 
 ```haskell
 (newBoard, row, col) <- case piece of
@@ -70,7 +70,7 @@ The game can be easily configured to play as PvP or PvE or EvE. In `app/Main.hs`
         White -> takeTurnAI board piece (step + 1)
 ```
 
-change `takeTurnAI` to `takeTurn`. Also don't forget to comment this line:
+change `takeTurnAI` to `takeTurn` for the side you want. Also don't forget to comment this line:
 
 ```haskell
 if step + 1 >= totalSteps then do putStrLn $ "Game ended at step limit."
