@@ -60,6 +60,18 @@ Note the caveat: `searchLevel = 2` means searching for three levels, because we 
 
 
 
+### `seqAB` Testing
+
+The code with alpha-beta pruning that is used to perform tests in  `mode=seqAB` are all in `seqAB` branch. If you don't have access to the `seqAB` branch locally, the code can be found [here](https://github.com/KevinRSX/gomokururu/tree/seqAB).
+
+```
+git clone https://github.com/KevinRSX/gomokururu -b seqAB
+```
+
+
+
+
+
 ## Playing as Human
 
 One of both of AIs can be replaced by human players. To do this, in `app/Main.hs`,
@@ -83,6 +95,7 @@ if step + 1 >= totalSteps then do putStrLn $ "Game ended at step limit."
 This project has only been tested on macOS Big Sur 11.3.1.
 
 Emojis and full-width characters might fail on Windows. One workaround, for now, is to replace those Unicode characters with ASCII characters.
+
 
 ## WARNING
 If you happen to be able to write some code like this, you should think twice whether you should be doing programming any more.
