@@ -84,6 +84,20 @@ This project has only been tested on macOS Big Sur 11.3.1.
 
 Emojis and full-width characters might fail on Windows. One workaround, for now, is to replace those Unicode characters with ASCII characters.
 
+## WARNING
+If you happen to be able to write some code like this, you should think twice whether you should be doing programming any more.
+```haskell
+boardDiff :: Board -> Board -> (Int, Int)
+boardDiff oldBoard newBoard = (drow, dcol)
+  where (drow, dcol) = quotRem diffPos (dim newBoard)
+        diffPos = getDiff oldBoard1d newBoard1d 0
+        getDiff [] [] _ = error "Invalid parameters"
+        getDiff (x:xs) (y:ys) ind | x /= y = ind
+                                  | x == y = getDiff xs ys (ind + 1)
+        oldBoard1d = (V.toList . V.concat . V.toList) (getBoard oldBoard)
+        newBoard1d = (V.toList . V.concat . V.toList) (getBoard newBoard)
+```
+
 
 
 ## References
