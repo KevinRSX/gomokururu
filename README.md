@@ -56,7 +56,7 @@ cutoffScore :: Int
 cutoffScore = 1000
 ```
 
-Note the caveat: `searchLevel = 2` means searching for three levels, because we count from 0 to 2 in minimax.
+Note the caveat: `searchLevel=2` means searching for three levels, because we count from 0 to 2 in minimax.
 
 
 ### `seqAB` Testing
