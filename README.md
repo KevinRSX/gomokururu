@@ -23,7 +23,7 @@ To rapidly load and test the libraries, run `stack ghci` then run `:l <hs filena
 
 ## Reproducing Results
 
-To reproduce the results in our report, you need run the main game with specific number of cores and proper RTS options.
+To reproduce the results in our [report](http://www.cs.columbia.edu/~sedwards/classes/2021/4995-fall/reports/Gomokururu.pdf), you need run the main game with specific number of cores and proper RTS options.
 
 ```
 stack run -- +RTS -N4 -l -s
