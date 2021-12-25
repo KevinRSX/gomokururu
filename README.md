@@ -1,6 +1,6 @@
 # Gomokururu
 
-Gomokururu is a parallelized Gomoku solver.
+Gomokururu is a parallelized Go-Moku AI.
 
 This is a class project for [COMS W4995 Parallel Functional Programming, Fall 2021](http://www.cs.columbia.edu/~sedwards/classes/2021/4995-fall/index.html) at [Columbia University](http://columbia.edu/).
 
@@ -10,6 +10,7 @@ This is a class project for [COMS W4995 Parallel Functional Programming, Fall 20
 
 - Kevin Xue: kx2154@columbia.edu
 - Andreas Cheng: hc3142@columbia.edu
+
 
 ## Installation
 
@@ -23,7 +24,7 @@ To rapidly load and test the libraries, run `stack ghci` then run `:l <hs filena
 
 ## Reproducing Results
 
-To reproduce the results in our [report](http://www.cs.columbia.edu/~sedwards/classes/2021/4995-fall/reports/Gomokururu.pdf), you need run the main game with specific number of cores and proper RTS options.
+To reproduce the results in our [report](http://www.cs.columbia.edu/~sedwards/classes/2021/4995-fall/reports/Gomokururu.pdf), you need to run the main game with specific number of cores and proper RTS options.
 
 ```
 stack run -- +RTS -N4 -l -s
@@ -36,7 +37,6 @@ To view the threadscope result, install [Threadscope](https://hackage.haskell.or
 ```
 threadscope gomokururu-exe.eventlog
 ```
-
 
 
 ### Tweaking Parameters
@@ -59,7 +59,6 @@ cutoffScore = 1000
 Note the caveat: `searchLevel = 2` means searching for three levels, because we count from 0 to 2 in minimax.
 
 
-
 ### `seqAB` Testing
 
 The code with alpha-beta pruning that is used to perform tests in  `mode=seqAB` are all in `seqAB` branch. If you don't have access to the `seqAB` branch locally, the code can be found [here](https://github.com/KevinRSX/gomokururu/tree/seqAB).
@@ -67,9 +66,6 @@ The code with alpha-beta pruning that is used to perform tests in  `mode=seqAB` 
 ```
 git clone https://github.com/KevinRSX/gomokururu -b seqAB
 ```
-
-
-
 
 
 ## Playing as Human
@@ -87,7 +83,6 @@ change `takeTurnAI` to `takeTurn` for the side you want. Also don't forget to co
 ```haskell
 if step + 1 >= totalSteps then do putStrLn $ "Game ended at step limit."
 ```
-
 
 
 ## Note on Character Encoding
